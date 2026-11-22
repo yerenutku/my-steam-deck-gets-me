@@ -1,0 +1,12 @@
+# created by the installation, never committed
+envs/*/
+models/
+tools/
+.cache/
+__pycache__/
+# your own data stays on your Deck
+service/history/
+service/settings.json
+service/warmup.wav
+lab/recordings*/
+lab/results*/

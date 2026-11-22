@@ -1,0 +1,9 @@
+## Interface: 16001, 11509, 20506
+## Title: My Steam Deck Gets Me
+## Notes: Voice chat-typing for WoW on the Steam Deck. Needs the companion tool. /wowvoice
+## IconTexture: Interface\AddOns\WowVoice\Media\addon_icon_128
+## Author: wowvoice
+## Version: 0.4.23
+## SavedVariables: WowVoiceDB
+
+WowVoice.lua
