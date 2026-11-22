@@ -3,7 +3,7 @@
 Which model works best depends on your voice, accent and microphone. The lab in `lab/` lets you record your own
 test lines and compare models on them, the same way we did for the [lab report](lab-report.md).
 
-All commands run from `~/wowvoice` in Desktop Mode, after `source env.sh`. Close WoW first: it competes for the
+All commands run from `~/my-steam-deck-gets-me` in Desktop Mode, after `source env.sh`. Close WoW first: it competes for the
 CPU and GPU and makes every timing slower.
 
 ## 1. Write your lines

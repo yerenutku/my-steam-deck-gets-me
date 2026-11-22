@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Careful first GPU check (AMD ROCm through PyTorch's "cuda" API).
 
-Usage (from ~/wowvoice): timeout 120 envs/gpu/bin/python lab/gpu_check.py
+Usage (from ~/my-steam-deck-gets-me): timeout 120 envs/gpu/bin/python lab/gpu_check.py
 Optional: HSA_CU_MASK=0:0-3 limits us to compute units 0-3 of the Deck's 8 (a hard cap for us).
 Steps get bigger one by one and each prints before it starts, so a hang shows where it happened.
 """

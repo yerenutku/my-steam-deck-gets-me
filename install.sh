@@ -1,7 +1,7 @@
 #!/bin/bash
 # My Steam Deck Gets Me: installer. In Desktop Mode, in Konsole:
-#   git clone https://github.com/yerenutku/my-steam-deck-gets-me.git ~/wowvoice && bash ~/wowvoice/install.sh
-# Safe to run again (it skips what is already there). Everything stays in ~/wowvoice; no root password needed.
+#   git clone https://github.com/yerenutku/my-steam-deck-gets-me.git ~/my-steam-deck-gets-me && bash ~/my-steam-deck-gets-me/install.sh
+# Safe to run again (it skips what is already there). Everything stays in ~/my-steam-deck-gets-me; no root password needed.
 # Options: --no-addon (don't copy the WoW addon), --no-service (don't set up the autostart).
 set -euo pipefail
 
@@ -18,8 +18,8 @@ step() { printf '\n\033[1;36m== %s\033[0m\n' "$*"; }
 ok()   { printf '   \033[32mok\033[0m %s\n' "$*"; }
 warn() { printf '   \033[33m!\033[0m %s\n' "$*"; }
 
-if [ "$SERVICE" = 1 ] && [ "$DIR" != "$HOME/wowvoice" ]; then
-  echo "Please put this folder at ~/wowvoice (the autostart expects it there): it is at $DIR"
+if [ "$SERVICE" = 1 ] && [ "$DIR" != "$HOME/my-steam-deck-gets-me" ]; then
+  echo "Please put this folder at ~/my-steam-deck-gets-me (the autostart expects it there): it is at $DIR"
   exit 1
 fi
 
@@ -75,13 +75,13 @@ if [ "$SERVICE" = 0 ]; then
   ok "skipped (--no-service)"
 else
   mkdir -p "$HOME/.config/systemd/user" "$DIR/.cache"
-  cp "$DIR/service/wowvoice.service" "$HOME/.config/systemd/user/wowvoice.service"
+  cp "$DIR/service/my-steam-deck-gets-me.service" "$HOME/.config/systemd/user/my-steam-deck-gets-me.service"
   systemctl --user daemon-reload
-  systemctl --user enable -q wowvoice
-  systemctl --user restart wowvoice
+  systemctl --user enable -q my-steam-deck-gets-me
+  systemctl --user restart my-steam-deck-gets-me
   sleep 1
-  systemctl --user is-active -q wowvoice && ok "running; it sleeps until you start Battle.net or WoW" \
-    || { warn "the service didn't start: systemctl --user status wowvoice"; exit 1; }
+  systemctl --user is-active -q my-steam-deck-gets-me && ok "running; it sleeps until you start Battle.net or WoW" \
+    || { warn "the service didn't start: systemctl --user status my-steam-deck-gets-me"; exit 1; }
 fi
 
 cat <<'EOF'
@@ -95,5 +95,5 @@ Done. Two things left, both one time only:
       - Right joystick > settings > Mode shift: button R4, mode "Directional Pad", leave its directions empty
 
 Then start Battle.net and WoW, hold R4, speak, let go. You'll see "Voice ready" shortly after logging in.
-Uninstall: bash ~/wowvoice/uninstall.sh
+Uninstall: bash ~/my-steam-deck-gets-me/uninstall.sh
 EOF

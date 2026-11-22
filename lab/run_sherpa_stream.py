@@ -5,7 +5,7 @@ The model transcribes while "you talk". Measured:
   sec/line (_seconds) = wait after the last audio arrives (release) until the final text
   rtf                 = total compute / audio length (must be < 1 to keep up live)
 
-Usage (from ~/wowvoice, after: source env.sh):
+Usage (from ~/my-steam-deck-gets-me, after: source env.sh):
   envs/sherpa/bin/python lab/run_sherpa_stream.py MODEL_DIR RUN_NAME
         [--hotwords FILE --bpe-vocab FILE --score S] [--paths N] [--threads N]
 """

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Transcribe every lab recording with Whisper via faster-whisper (CPU, comparison only).
 
-Usage (from ~/wowvoice, after: source env.sh):
+Usage (from ~/my-steam-deck-gets-me, after: source env.sh):
   envs/sherpa/bin/python lab/run_whisper.py RUN_NAME [--model large-v3-turbo] [--prompt FILE]
 --prompt FILE: give Whisper the terms (one per line) as its initial prompt (its form of boosting).
 """

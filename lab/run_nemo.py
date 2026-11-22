@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Transcribe every lab recording with an NVIDIA NeMo Parakeet model (full precision, CPU).
 
-Usage (from ~/wowvoice, after: source env.sh):
+Usage (from ~/my-steam-deck-gets-me, after: source env.sh):
   envs/nemo/bin/python lab/run_nemo.py MODEL RUN_NAME   (GPU: envs/gpu/bin/python ... --device cuda)
         [--beam N] [--boost FILE] [--alpha A] [--context-score S] [--threads N]
 

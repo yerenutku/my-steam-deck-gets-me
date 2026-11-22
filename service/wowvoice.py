@@ -13,7 +13,7 @@ The tool signals the addon with Ctrl+Shift+F9..F12 (type nothing) and presses En
 It types only when WoW is the active window; otherwise the text goes to the clipboard.
 Every dictation is kept in service/history/ (audio + json), newest HISTORY_KEEP.
 
-Run (from ~/wowvoice, ONE instance only):  envs/sherpa/bin/python service/wowvoice.py
+Run (from ~/my-steam-deck-gets-me, ONE instance only):  envs/sherpa/bin/python service/wowvoice.py
         [--send-mode countdown|immediate|wait] [--countdown 2] [--engine parakeet|qwen] [--no-addon]
 """
 

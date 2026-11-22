@@ -1,5 +1,5 @@
-# Source this before working on wowvoice:  source ~/wowvoice/env.sh
-# Keeps every tool, Python install, cache and model download inside ~/wowvoice.
+# Source this before working on wowvoice:  source ~/my-steam-deck-gets-me/env.sh
+# Keeps every tool, Python install, cache and model download inside ~/my-steam-deck-gets-me.
 export WOWVOICE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # the folder this file is in
 export PATH="$WOWVOICE/tools/bin:$PATH"
 export UV_PYTHON_INSTALL_DIR="$WOWVOICE/tools/python"

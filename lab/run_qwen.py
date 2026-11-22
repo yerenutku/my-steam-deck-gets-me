@@ -4,7 +4,7 @@
 Qwen3-ASR is a speech LLM: an audio encoder + a Qwen3 language model that writes the text
 token by token. Names/terms are given as a plain-text context prompt (no boosting tree).
 
-Usage (from ~/wowvoice, after: source env.sh):
+Usage (from ~/my-steam-deck-gets-me, after: source env.sh):
   envs/nemo/bin/python lab/run_qwen.py MODEL RUN_NAME [--names FILE] [--device cpu|cuda]
         [--threads N] [--set NAME] [--dtype float32|bfloat16|float16]
 MODEL: Qwen/Qwen3-ASR-0.6B-hf or Qwen/Qwen3-ASR-1.7B-hf. CPU works with the nemo env;

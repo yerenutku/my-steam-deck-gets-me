@@ -5,7 +5,7 @@ Python bindings: transcribe-cpp (+ transcribe-cpp-native, which ships the Vulkan
 Names: --names FILE passes `vocabulary=` (or `prompt=` for models with a context prompt) when the
 model supports it; the script prints what the model supports.
 
-Usage (from ~/wowvoice, after: source env.sh):
+Usage (from ~/my-steam-deck-gets-me, after: source env.sh):
   envs/sherpa/bin/python lab/run_transcribe.py MODEL.gguf RUN_NAME [--names FILE] [--cpu]
         [--threads N] [--set NAME]
 """

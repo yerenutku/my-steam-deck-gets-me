@@ -1,4 +1,4 @@
--- WowVoice: the in-game side of the wowvoice dictation tool (~/wowvoice/service/wowvoice.py).
+-- WowVoice: the in-game side of the wowvoice dictation tool (~/my-steam-deck-gets-me/service/wowvoice.py).
 --
 -- Who does what:
 --   the TOOL reads R4 and the right stick from the controller, transcribes, and presses keys:
@@ -27,7 +27,7 @@ local SUB_SLOTS = 8
 local OPTIONS = { { "2 s", "countdown", 2 }, { "3 s", "countdown", 3 }, { "5 s", "countdown", 5 },
                   { "Wait for me", "wait" }, { "Send immediately", "immediate" } }
 local MAX_PEOPLE = 8
--- WoW words from ~/wowvoice/service/names.txt (copied in when the addon is built; used as alternatives)
+-- WoW words from ~/my-steam-deck-gets-me/service/names.txt (copied in when the addon is built; used as alternatives)
 local TERMS = { "Deadmines", "Scarlet Monastery", "Blackrock Depths", "Blackrock Spire", "Molten Core", "Crossroads", "Stratholme", "Ironforge", "Hinterlands", "Zul'Farrak", "Onyxia", "Stockades", "Stormwind", "Ashenvale", "Stranglethorn", "Thunder Bluff", "Linen Cloth", "Silk Cloth", "Thorium Ore", "Arcane Crystal", "Arcanite Bar", "Heavy Leather Ball", "LFM", "LF2M", "WTS", "DPS", "AFK", "brb", "ty", "lol", "Wailing Caverns", "Ragefire Chasm", "Shadowfang Keep", "Blackfathom Deeps", "Gnomeregan", "Razorfen Kraul", "Razorfen Downs", "Uldaman", "Maraudon", "Sunken Temple", "Dire Maul", "Scholomance", "Zul'Gurub", "Blackwing Lair", "Ahn'Qiraj", "Naxxramas", "Orgrimmar", "Undercity", "Darnassus", "Elwynn Forest", "Westfall", "Redridge", "Duskwood", "Wetlands", "Arathi Highlands", "Hillsbrad", "Alterac Valley", "Warsong Gulch", "Arathi Basin", "Badlands", "Searing Gorge", "Burning Steppes", "Swamp of Sorrows", "Blasted Lands", "Tanaris", "Feralas", "Desolace", "Thousand Needles", "Dustwallow Marsh", "Un'Goro Crater", "Silithus", "Winterspring", "Felwood", "Azshara", "Eastern Plaguelands", "Western Plaguelands", "Barrens", "Durotar", "Mulgore", "Teldrassil", "Darkshore", "Stonetalon", "Booty Bay", "Gadgetzan", "Tarren Mill", "Southshore", "Everlook", "Runecloth", "Mageweave", "Mithril Ore", "Black Lotus", "Devilsaur Leather", "Elixir of the Mongoose", "Major Healing Potion", "Flask of Titans", "Righteous Orb", "Lionheart Helm", "WTB", "LFG", "OOM", "CC", "AoE", "HoT", "GZ", "gratz", "inc" }
 -- words speech recognition often swaps (both directions are offered)
 local SOUNDALIKE = { { "need", "neat" }, { "tank", "thank" }, { "mob", "mock" }, { "mob", "mop" }, { "pull", "pool" },
@@ -709,7 +709,7 @@ local function replaceDone()
 end
 
 ------------------------------------------------------------------ the ring (drawing; the tool decides the slot)
--- Look: design/handoff concept B "Recessed Stone Wedge"; artwork drawn by ~/wowvoice/design/build_wheel.py
+-- Look: design/handoff concept B "Recessed Stone Wedge"; artwork drawn by ~/my-steam-deck-gets-me/design/build_wheel.py
 -- into Media/*.tga (512 canvas: outer radius 238, ring 210, hub 48; wedges/line point NORTH and are rotated).
 local MEDIA = "Interface\\AddOns\\WowVoice\\Media\\"
 local WHEEL = 430                                       -- on-screen size (UI units); /wowvoice size N
@@ -1316,7 +1316,7 @@ owner:SetScript("OnEvent", function(self, event, a1, a2)
     C_Timer.After(90, function()                       -- the tool says hello within a minute of every UI load
       if not helloSeen then
         say("|cffff8060no contact with the My Steam Deck Gets Me tool.|r Is it installed and running? (Desktop Mode: "
-            .. "systemctl --user status wowvoice)")
+            .. "systemctl --user status my-steam-deck-gets-me)")
       end
     end)
     if not DB.ctx then setOutdated("never saved") end

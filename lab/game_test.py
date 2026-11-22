@@ -10,7 +10,7 @@ Engines:
   qwen  Qwen3-ASR 1.7B Q8_0 on the GPU (Vulkan, transcribe.cpp), names as context   -> envs/sherpa
   nemo  Parakeet unified-en on the CPU (NeMo), beam 4 + name boosting                -> envs/nemo
 
-Usage (from ~/wowvoice):
+Usage (from ~/my-steam-deck-gets-me):
   envs/sherpa/bin/python lab/game_test.py --engine qwen [--names lab/names.txt] [--label NAME]
   envs/nemo/bin/python   lab/game_test.py --engine nemo [--threads 3]
   common: [--rounds 10] [--gap 8] [--baseline 30] [--no-popup]

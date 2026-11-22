@@ -8,8 +8,8 @@ While neither runs, nothing is loaded: no microphone, no speech model, no CPU. T
   sleep  pidfds report when those processes exit. When none is left for GRACE seconds (Battle.net restarts itself
          during updates; its launcher exits after starting Battle.net.exe), the tool is stopped: the microphone and
          the model's memory are freed.
-The systemd user service (wowvoice.service) starts this file; arguments are passed on to wowvoice.py.
-Log: ~/wowvoice/.cache/service.log, lines marked "sleeper:".
+The systemd user service (my-steam-deck-gets-me.service) starts this file; arguments are passed on to wowvoice.py.
+Log: ~/my-steam-deck-gets-me/.cache/service.log, lines marked "sleeper:".
 """
 
 import os

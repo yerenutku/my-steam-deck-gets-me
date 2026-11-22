@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Find speech pauses in every lab recording with Silero VAD and save them.
 
-Usage (from ~/wowvoice): envs/sherpa/bin/python lab/make_segments.py [--silence 0.35]
+Usage (from ~/my-steam-deck-gets-me): envs/sherpa/bin/python lab/make_segments.py [--silence 0.35]
 Writes lab/recordings/segments.json: {"001": [[start_s, end_s], ...], ...} (16 kHz timeline).
 run_nemo.py --split uses it to transcribe phrase by phrase, as if done while you talk.
 """

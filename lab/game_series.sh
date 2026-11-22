@@ -2,7 +2,7 @@
 # Runs a series of while-gaming tests back to back (WowVoiceFPS addon records WoW's frames).
 # Usage: lab/game_series.sh uncapped|capped30
 # Gives 20 s to switch to WoW first (WoW must be in the FOREGROUND: in the background it caps its FPS).
-cd "$HOME/wowvoice" || exit 1
+cd "$HOME/my-steam-deck-gets-me" || exit 1
 tag="${1:-uncapped}"
 notify-send -a "wowvoice test" -t 15000 "Switch to WoW now - tests start in 20 s (stand still)"
 sleep 20

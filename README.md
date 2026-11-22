@@ -48,7 +48,7 @@ Options on the wheel: countdown of 2, 3 or 5 seconds, "Wait for me", or "Send im
 In Desktop Mode, in Konsole:
 
 ```bash
-git clone https://github.com/yerenutku/my-steam-deck-gets-me.git ~/wowvoice && bash ~/wowvoice/install.sh
+git clone https://github.com/yerenutku/my-steam-deck-gets-me.git ~/my-steam-deck-gets-me && bash ~/my-steam-deck-gets-me/install.sh
 ```
 
 Then two one-time settings (WoW chat style, one Steam controller setting): see **[Installation](docs/install.md)**.

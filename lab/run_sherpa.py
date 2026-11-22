@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Transcribe every lab recording with a sherpa-onnx Parakeet model.
 
-Usage (from ~/wowvoice, after: source env.sh):
+Usage (from ~/my-steam-deck-gets-me, after: source env.sh):
   envs/sherpa/bin/python lab/run_sherpa.py MODEL_DIR RUN_NAME [--beam] [--hotwords FILE] [--score N]
         [--threads N] [--split]
 

@@ -1,10 +1,10 @@
 #!/bin/bash
-# My Steam Deck Gets Me: uninstaller. Stops the autostart and removes the addon. Your ~/wowvoice folder (with your
+# My Steam Deck Gets Me: uninstaller. Stops the autostart and removes the addon. Your ~/my-steam-deck-gets-me folder (with your
 # names list and dictation history) is only deleted when you confirm.
 set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-systemctl --user disable --now wowvoice 2>/dev/null
-rm -f "$HOME/.config/systemd/user/wowvoice.service"
+systemctl --user disable --now my-steam-deck-gets-me 2>/dev/null
+rm -f "$HOME/.config/systemd/user/my-steam-deck-gets-me.service"
 systemctl --user daemon-reload
 echo "autostart removed"
 for wow in "$HOME"/.local/share/Steam/steamapps/compatdata/*/pfx/drive_c/"Program Files (x86)"/"World of Warcraft"/_*_; do

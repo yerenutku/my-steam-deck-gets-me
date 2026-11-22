@@ -1,6 +1,6 @@
 # Installation
 
-Everything goes into one folder, `~/wowvoice`. Nothing is installed system-wide and no root password is needed.
+Everything goes into one folder, `~/my-steam-deck-gets-me`. Nothing is installed system-wide and no root password is needed.
 It takes about 10 minutes, mostly the 1.2 GB speech model download.
 
 ## 1. Run the installer
@@ -8,7 +8,7 @@ It takes about 10 minutes, mostly the 1.2 GB speech model download.
 Switch to **Desktop Mode**, open **Konsole** and paste:
 
 ```bash
-git clone https://github.com/yerenutku/my-steam-deck-gets-me.git ~/wowvoice && bash ~/wowvoice/install.sh
+git clone https://github.com/yerenutku/my-steam-deck-gets-me.git ~/my-steam-deck-gets-me && bash ~/my-steam-deck-gets-me/install.sh
 ```
 
 It sets up Python and its packages, downloads the speech model and the pause detector, copies the addon into WoW
@@ -33,21 +33,21 @@ Start Battle.net and WoW. Shortly after you enter the world, **Voice ready** app
 to run Deadmines", let go: the text appears in a box under the chat and is sent after a 2-second countdown
 (**B** throws it away).
 
-Add your friends' and guild's names to `~/wowvoice/service/names.txt` (one per line); the tool rereads it by itself.
+Add your friends' and guild's names to `~/my-steam-deck-gets-me/service/names.txt` (one per line); the tool rereads it by itself.
 
 The tool sleeps until you start Battle.net or WoW: no microphone, no speech model, no CPU until then. While you play,
 the microphone opens at your first press and closes after 2 minutes without use.
 
 ## Troubleshooting
 
-- Status and errors: `systemctl --user status wowvoice` and `~/wowvoice/.cache/service.log`.
-- Restart: `systemctl --user restart wowvoice`. Never start a second copy by hand.
+- Status and errors: `systemctl --user status my-steam-deck-gets-me` and `~/my-steam-deck-gets-me/.cache/service.log`.
+- Restart: `systemctl --user restart my-steam-deck-gets-me`. Never start a second copy by hand.
 - "No contact with the tool" in WoW's chat: the tool isn't running; check the two lines above.
 
 ## Uninstall
 
 ```bash
-bash ~/wowvoice/uninstall.sh
+bash ~/my-steam-deck-gets-me/uninstall.sh
 ```
 
-It removes the autostart and the addon, and asks before deleting `~/wowvoice`.
+It removes the autostart and the addon, and asks before deleting `~/my-steam-deck-gets-me`.

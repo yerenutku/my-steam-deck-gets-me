@@ -7,7 +7,7 @@ Starts `crispasr --server` with the model loaded once, then sends each recording
 Names: --hotwords FILE boosts the terms during Parakeet TDT decoding (beam search recommended),
        --context FILE gives Qwen3-ASR the terms as free text ("World of Warcraft chat. Vocabulary: ...").
 
-Usage (from ~/wowvoice, after: source env.sh):
+Usage (from ~/my-steam-deck-gets-me, after: source env.sh):
   envs/sherpa/bin/python lab/run_crisp.py MODEL.gguf RUN_NAME [--backend parakeet|qwen3-1.7b]
         [--beam N] [--hotwords FILE --boost F] [--context FILE] [--cpu] [--threads N] [--set NAME]
 """
