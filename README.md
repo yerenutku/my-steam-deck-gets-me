@@ -58,4 +58,5 @@ Speech model: NVIDIA Parakeet unified-en 0.6B (CC-BY-4.0), as the
 [GGUF build by handy-computer](https://huggingface.co/handy-computer/parakeet-unified-en-0.6b-gguf), run by
 [transcribe.cpp](https://pypi.org/project/transcribe-cpp/) on Vulkan. Pause detection: Silero VAD (MIT), via
 sherpa-onnx (Apache-2.0). Built by a WoW player together with Claude (Anthropic).
+Our code: [MIT licence](LICENSE). The speech model keeps its own licence (CC-BY-4.0).
 Not affiliated with Blizzard Entertainment or Valve.
