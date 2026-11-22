@@ -1,6 +1,6 @@
 # Source this before working on wowvoice:  source ~/wowvoice/env.sh
 # Keeps every tool, Python install, cache and model download inside ~/wowvoice.
-export WOWVOICE="$HOME/wowvoice"
+export WOWVOICE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # the folder this file is in
 export PATH="$WOWVOICE/tools/bin:$PATH"
 export UV_PYTHON_INSTALL_DIR="$WOWVOICE/tools/python"
 export UV_CACHE_DIR="$WOWVOICE/.cache/uv"
