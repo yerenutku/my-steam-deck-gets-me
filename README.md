@@ -59,4 +59,7 @@ Speech model: NVIDIA Parakeet unified-en 0.6B (CC-BY-4.0), as the
 [transcribe.cpp](https://pypi.org/project/transcribe-cpp/) on Vulkan. Pause detection: Silero VAD (MIT), via
 sherpa-onnx (Apache-2.0). Built by a WoW player together with Claude (Anthropic).
 Our code: [MIT licence](LICENSE). The speech model keeps its own licence (CC-BY-4.0).
+Borrowed, with thanks: the Deck's button positions in the controller data come from
+[Decktation](https://github.com/silverfoxy/decktation)'s deck_hid.py (MIT); `service/common_words.txt` is built
+from the word pieces of OpenAI Whisper's tokenizer (MIT).
 Not affiliated with Blizzard Entertainment or Valve.
