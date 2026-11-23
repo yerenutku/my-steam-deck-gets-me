@@ -1,6 +1,6 @@
 {
- "version": "0.5.1",
+ "version": "0.5.2",
  "compat": 1,
  "after": "reload",
- "notes": "Test release: checks the in-game update."
+ "notes": "Fix: the app was missing a file in 0.5.0."
 }

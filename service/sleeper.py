@@ -129,16 +129,18 @@ def stop(child):
 
 def main():
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
-    child = None
+    child, delay = None, 5
     try:
         while True:
             wait_for_start()
             child = subprocess.Popen([sys.executable, "-u", str(HERE / "wowvoice.py"), *sys.argv[1:]])
             log(f"tool started (pid {child.pid})")
+            started = time.monotonic()
             if wait_until_gone(child) == "child":
-                log(f"tool exited (code {child.wait()}); starting it again in 5 s")
+                delay = 5 if time.monotonic() - started > 120 else min(delay * 2, 300)   # crash loop: back off
+                log(f"tool exited (code {child.wait()}); starting it again in {delay} s")
                 child = None
-                time.sleep(5)
+                time.sleep(delay)
                 continue
             log("Battle.net and WoW are closed: stopping the tool")
             stop(child)
