@@ -8,7 +8,9 @@ rm -f "$HOME/.config/systemd/user/my-steam-deck-gets-me.service"
 systemctl --user daemon-reload
 echo "autostart removed"
 for wow in "$HOME"/.local/share/Steam/steamapps/compatdata/*/pfx/drive_c/"Program Files (x86)"/"World of Warcraft"/_*_; do
-  [ -d "$wow/Interface/AddOns/WowVoice" ] && rm -rf "$wow/Interface/AddOns/WowVoice" && echo "addon removed from $(basename "$wow")"
+  for name in MySteamDeckGetsMe WowVoice; do
+    [ -d "$wow/Interface/AddOns/$name" ] && rm -rf "$wow/Interface/AddOns/$name" && echo "addon removed from $(basename "$wow")"
+  done
 done
 if [ -d "$DIR/backups" ] && [ -t 0 ]; then
   read -r -p "Put your original Steam controller layout back? Steam must be closed. [y/N] " answer

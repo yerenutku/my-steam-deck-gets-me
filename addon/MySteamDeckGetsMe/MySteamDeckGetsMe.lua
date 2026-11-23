@@ -19,7 +19,7 @@
 --           Ctrl+Shift+F6  send the box (no-op if it's closed)   F7 correction (stop the countdown)
 -- The ring's top slots must match service/ring.py (TOP).
 
-local VERSION = "0.5.15"
+local VERSION = "0.6.0"
 local DEFAULTS = { countdown = 2.0, mode = "countdown", channel = { type = "SAY", sector = 1 }, whispers = {}, recent = {},
                    pos = "right", button = "R4" }
 local TOP = { "Say", "Party", "Guild", "Whisper", "Friends", "Recent", "World", "Options" }  -- = service/ring.py
@@ -28,7 +28,7 @@ local OPTIONS = { { "2 s", "countdown", 2 }, { "3 s", "countdown", 3 }, { "5 s",
                   { "Wait for me", "wait" }, { "Send immediately", "immediate" } }
 local MAX_PEOPLE = 8
 -- WoW words from ~/my-steam-deck-gets-me/service/names.txt (copied in when the addon is built; used as alternatives)
-local TERMS = { "Deadmines", "Scarlet Monastery", "Blackrock Depths", "Blackrock Spire", "Molten Core", "Crossroads", "Stratholme", "Ironforge", "Hinterlands", "Zul'Farrak", "Onyxia", "Stockades", "Stormwind", "Ashenvale", "Stranglethorn", "Thunder Bluff", "Linen Cloth", "Silk Cloth", "Thorium Ore", "Arcane Crystal", "Arcanite Bar", "Heavy Leather Ball", "LFM", "LF2M", "WTS", "DPS", "AFK", "brb", "ty", "lol", "Wailing Caverns", "Ragefire Chasm", "Shadowfang Keep", "Blackfathom Deeps", "Gnomeregan", "Razorfen Kraul", "Razorfen Downs", "Uldaman", "Maraudon", "Sunken Temple", "Dire Maul", "Scholomance", "Zul'Gurub", "Blackwing Lair", "Ahn'Qiraj", "Naxxramas", "Orgrimmar", "Undercity", "Darnassus", "Elwynn Forest", "Westfall", "Redridge", "Duskwood", "Wetlands", "Arathi Highlands", "Hillsbrad", "Alterac Valley", "Warsong Gulch", "Arathi Basin", "Badlands", "Searing Gorge", "Burning Steppes", "Swamp of Sorrows", "Blasted Lands", "Tanaris", "Feralas", "Desolace", "Thousand Needles", "Dustwallow Marsh", "Un'Goro Crater", "Silithus", "Winterspring", "Felwood", "Azshara", "Eastern Plaguelands", "Western Plaguelands", "Barrens", "Durotar", "Mulgore", "Teldrassil", "Darkshore", "Stonetalon", "Booty Bay", "Gadgetzan", "Tarren Mill", "Southshore", "Everlook", "Runecloth", "Mageweave", "Mithril Ore", "Black Lotus", "Devilsaur Leather", "Elixir of the Mongoose", "Major Healing Potion", "Flask of Titans", "Righteous Orb", "Lionheart Helm", "WTB", "LFG", "OOM", "CC", "AoE", "HoT", "GZ", "gratz", "inc" }
+local TERMS = { "Deadmines", "Scarlet Monastery", "Blackrock Depths", "Blackrock Spire", "Molten Core", "Crossroads", "Stratholme", "Ironforge", "Hinterlands", "Zul'Farrak", "Onyxia", "Stockades", "Stormwind", "Ashenvale", "Stranglethorn", "Thunder Bluff", "Linen Cloth", "Silk Cloth", "Thorium Ore", "Arcane Crystal", "Arcanite Bar", "Heavy Leather Ball", "LFM", "LF2M", "WTS", "DPS", "AFK", "brb", "ty", "lol", "Wailing Caverns", "Ragefire Chasm", "Shadowfang Keep", "Blackfathom Deeps", "Gnomeregan", "Razorfen Kraul", "Razorfen Downs", "Uldaman", "Maraudon", "Sunken Temple", "Dire Maul", "Scholomance", "Zul'Gurub", "Blackwing Lair", "Ahn'Qiraj", "Naxxramas", "Orgrimmar", "Undercity", "Darnassus", "Elwynn Forest", "Westfall", "Redridge", "Duskwood", "Wetlands", "Arathi Highlands", "Hillsbrad", "Alterac Valley", "Warsong Gulch", "Arathi Basin", "Badlands", "Searing Gorge", "Burning Steppes", "Swamp of Sorrows", "Blasted Lands", "Tanaris", "Feralas", "Desolace", "Thousand Needles", "Dustwallow Marsh", "Un'Goro Crater", "Silithus", "Winterspring", "Felwood", "Azshara", "Eastern Plaguelands", "Western Plaguelands", "Barrens", "Durotar", "Mulgore", "Teldrassil", "Darkshore", "Stonetalon", "Booty Bay", "Gadgetzan", "Tarren Mill", "Southshore", "Everlook", "Runecloth", "Mageweave", "Mithril Ore", "Black Lotus", "Devilsaur Leather", "Elixir of the Mongoose", "Major Healing Potion", "Flask of Titans", "Righteous Orb", "Lionheart Helm", "WTB", "LFG", "OOM", "CC", "AoE", "HoT", "GZ", "gratz", "inc", "Stormwind City", "Thunder Bluff", "Ratchet", "Menethil Harbor", "Auberdine", "Astranaar", "Theramore", "Sentinel Hill", "Lakeshire", "Darkshire", "Goldshire", "Kharanos", "Brill", "Razor Hill", "Sen'jin Village", "Bloodhoof Village", "Camp Taurajo", "Brackenwall Village", "Light's Hope Chapel", "Cenarion Hold", "Thorium Point", "Kargath", "Aerie Peak", "Revantusk Village", "Nijel's Point", "Feathermoon Stronghold", "Splintertree Post", "Freewind Post", "Hammerfall", "Refuge Pointe", "Stonard", "Grom'gol", "Chillwind Camp", "Upper Blackrock Spire", "Lower Blackrock Spire", "UBRS", "LBRS", "BRD", "BWL", "ZG", "AQ", "AQ20", "AQ40", "Naxx", "MC", "SFK", "RFC", "WC", "BFD", "SM", "ZF", "Mara", "Strat", "Scholo", "Ony", "DM", "Ragnaros", "Nefarian", "Hakkar", "C'Thun", "Kel'Thuzad", "Van Cleef", "Baron Rivendare", "Rend Blackhand", "Drakkisath", "Ossirian", "Majordomo", "Arugal", "Paladin", "Shaman", "Warlock", "Druid", "Rogue", "Hunter", "Priest", "Warrior", "Tauren", "Troll", "Orc", "Gnome", "Dwarf", "Night Elf", "Wool Cloth", "Copper Ore", "Tin Ore", "Iron Ore", "Gold Ore", "Silver Ore", "Dark Iron Ore", "Copper Bar", "Iron Bar", "Mithril Bar", "Thorium Bar", "Light Leather", "Medium Leather", "Heavy Leather", "Thick Leather", "Rugged Leather", "Peacebloom", "Silverleaf", "Earthroot", "Mageroyal", "Briarthorn", "Swiftthistle", "Bruiseweed", "Stranglekelp", "Kingsblood", "Liferoot", "Fadeleaf", "Goldthorn", "Khadgar's Whisker", "Sungrass", "Firebloom", "Gromsblood", "Dreamfoil", "Plaguebloom", "Golden Sansam", "Mountain Silversage", "Icecap", "Essence of Fire", "Essence of Earth", "Essence of Water", "Essence of Undeath", "Soul Shard", "Hearthstone", "Healing Potion", "Mana Potion", "Greater Healing Potion", "Superior Healing Potion", "Major Mana Potion", "Free Action Potion", "Linen Bandage", "Heavy Runecloth Bandage", "Felcloth", "Moonroot", "Star Ruby", "LF1M", "LF3M", "WTT", "OOM", "DoT", "HoT", "AoE", "rez", "aggro", "buff", "debuff", "nerf", "kiting", "pug" }
 -- words speech recognition often swaps (both directions are offered)
 local SOUNDALIKE = { { "need", "neat" }, { "tank", "thank" }, { "mob", "mock" }, { "mob", "mop" }, { "pull", "pool" },
   { "heal", "heel" }, { "heals", "heels" }, { "buff", "both" }, { "buff", "bluff" }, { "roll", "role" },
@@ -224,7 +224,7 @@ measure:Hide()
 local boxInset = 14
 -- Countdown bar: sits on the box's top edge (one unit with it): dark track + aged-gold frame, glossy fill
 -- (Media/bar_fill, tinted gold → ember red at the end) with a spark at its tip.
-local BOX_MEDIA = "Interface\\AddOns\\WowVoice\\Media\\"
+local BOX_MEDIA = "Interface\\AddOns\\MySteamDeckGetsMe\\Media\\"
 local bar = CreateFrame("StatusBar", nil, box)
 bar:SetStatusBarTexture(BOX_MEDIA .. "bar_fill")
 bar:SetMinMaxValues(0, 1)
@@ -408,7 +408,7 @@ ind:Hide()
 local indPlate = ind:CreateTexture(nil, "BACKGROUND")   -- Media/status_*: card with a round icon well (left)
 indPlate:SetAllPoints()
 local indIcon = ind:CreateTexture(nil, "ARTWORK")
-indIcon:SetTexture("Interface\\AddOns\\WowVoice\\Media\\icon_round")  -- the icon's round centre, cut to fit the well
+indIcon:SetTexture("Interface\\AddOns\\MySteamDeckGetsMe\\Media\\icon_round")  -- the icon's round centre, cut to fit the well
 local indDot = ind:CreateTexture(nil, "OVERLAY")
 local indText = ind:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 indText:SetShadowOffset(1.5, -1.5)
@@ -456,17 +456,17 @@ local function indicate(what)
   if what ~= indWhat then indSince = GetTime() end
   indWhat = what
   if what == "listen" then
-    indPlate:SetTexture("Interface\\AddOns\\WowVoice\\Media\\status_listen")
+    indPlate:SetTexture("Interface\\AddOns\\MySteamDeckGetsMe\\Media\\status_listen")
     indText:SetText("Listening...")
     indText:SetTextColor(1, 0.55, 0.48)
     indDot:SetColorTexture(1, 0.25, 0.2, 1)
   elseif what == "ready" then                        -- the tool said hello: it runs
-    indPlate:SetTexture("Interface\\AddOns\\WowVoice\\Media\\status_work")
+    indPlate:SetTexture("Interface\\AddOns\\MySteamDeckGetsMe\\Media\\status_work")
     indText:SetText("Voice ready")
     indText:SetTextColor(0.55, 1, 0.5)
     indDot:SetColorTexture(0.3, 1, 0.3, 1)
   else
-    indPlate:SetTexture("Interface\\AddOns\\WowVoice\\Media\\status_work")
+    indPlate:SetTexture("Interface\\AddOns\\MySteamDeckGetsMe\\Media\\status_work")
     indText:SetText("Transcribing...")
     indText:SetTextColor(1, 0.8, 0.35)
     indDot:SetColorTexture(1, 0.75, 0.2, 1)
@@ -711,7 +711,7 @@ end
 ------------------------------------------------------------------ the ring (drawing; the tool decides the slot)
 -- Look: design/handoff concept B "Recessed Stone Wedge"; artwork drawn by ~/my-steam-deck-gets-me/design/build_wheel.py
 -- into Media/*.tga (512 canvas: outer radius 238, ring 210, hub 48; wedges/line point NORTH and are rotated).
-local MEDIA = "Interface\\AddOns\\WowVoice\\Media\\"
+local MEDIA = "Interface\\AddOns\\MySteamDeckGetsMe\\Media\\"
 local WHEEL = 430                                       -- on-screen size (UI units); /wowvoice size N
 local ring = CreateFrame("Frame", "WowVoiceRing", UIParent)
 ring:SetFrameStrata("DIALOG")
@@ -1299,6 +1299,126 @@ SH.F12 = function()                                     -- the app: this addon i
   say("|cffff8060this addon is older than the app.|r Update it in CurseForge.")
 end
 
+------------------------------------------------------------------ button overlay (for videos): L4 shows / hides it
+-- A Steam Deck picture (Media/deck_overlay, drawn by design/build_wheel.py) whose buttons glow while pressed, so
+-- viewers see what the player does. WoW reads the pad's own buttons and sticks (C_GamePad.GetDeviceMappedState, polled
+-- only while it shows); the back buttons are Steam's, so the app helps: L4 -> Shift+F10 (toggle), and R4 glows while
+-- the card says "Listening". L5 / R5 aren't seen (drawn for the picture only).
+local DECK = {   -- generated by design/build_wheel.py (DECK): shape, binding, box or circle in 1024x512
+  LT = { "rect", "PADLTRIGGER", 100, 36, 220, 66 },
+  RT = { "rect", "PADRTRIGGER", 804, 36, 924, 66 },
+  LB = { "rect", "PADLSHOULDER", 80, 68, 250, 94 },
+  RB = { "rect", "PADRSHOULDER", 774, 68, 944, 94 },
+  UP = { "rect", "PADDUP", 115, 140, 145, 178 },
+  DOWN = { "rect", "PADDDOWN", 115, 202, 145, 240 },
+  LEFT = { "rect", "PADDLEFT", 77, 175, 117, 205 },
+  RIGHT = { "rect", "PADDRIGHT", 143, 175, 183, 205 },
+  Y = { "round", "PAD4", 894, 150, 18 },
+  X = { "round", "PAD3", 854, 190, 18 },
+  B = { "round", "PAD2", 934, 190, 18 },
+  A = { "round", "PAD1", 894, 230, 18 },
+  VIEW = { "rect", "PADBACK", 246, 130, 284, 152 },
+  MENU = { "rect", "PADFORWARD", 740, 130, 778, 152 },
+  LS = { "stick", "PADLSTICK", 225, 215, 40 },
+  RS = { "stick", "PADRSTICK", 799, 215, 40 },
+  L4 = { "rect", nil, 70, 474, 160, 504 },
+  L5 = { "rect", nil, 170, 474, 260, 504 },
+  R4 = { "rect", nil, 864, 474, 954, 504 },
+  R5 = { "rect", nil, 764, 474, 854, 504 },
+}
+local OV_SCALE = 0.375                                   -- 1024x512 picture -> 384x192 on screen
+local overlay = CreateFrame("Frame", "WowVoiceOverlay", UIParent)
+overlay:SetSize(1024 * OV_SCALE, 512 * OV_SCALE)
+overlay:SetPoint("LEFT", 16, -60)
+overlay:SetFrameStrata("HIGH")
+overlay:Hide()
+local ovBase = overlay:CreateTexture(nil, "BACKGROUND")
+ovBase:SetAllPoints()
+ovBase:SetTexture(MEDIA .. "deck_overlay")
+local ovParts, ovIndex = {}, {}
+for name, d in pairs(DECK) do
+  local shape, binding = d[1], d[2]
+  local t = overlay:CreateTexture(nil, "ARTWORK")
+  if shape == "rect" then
+    t:SetColorTexture(0.35, 1, 0.35, 0.55)
+    t:SetPoint("TOPLEFT", d[3] * OV_SCALE, -d[4] * OV_SCALE)
+    t:SetSize((d[5] - d[3]) * OV_SCALE, (d[6] - d[4]) * OV_SCALE)
+  else
+    t:SetTexture(MEDIA .. "deck_glow")
+    t:SetVertexColor(0.35, 1, 0.35, 0.9)
+    local size = (d[5] * 2 + 22) * OV_SCALE
+    t:SetSize(size, size)
+    t:SetPoint("CENTER", overlay, "TOPLEFT", d[3] * OV_SCALE, -d[4] * OV_SCALE)
+  end
+  t:Hide()
+  local part = { tex = t, binding = binding, shape = shape, d = d }
+  if shape == "stick" then
+    part.dot = overlay:CreateTexture(nil, "OVERLAY")
+    part.dot:SetTexture(MEDIA .. "deck_glow")
+    part.dot:SetVertexColor(0.95, 0.85, 0.5, 1)
+    part.dot:SetSize(26 * OV_SCALE * 2, 26 * OV_SCALE * 2)
+  end
+  ovParts[name] = part
+end
+local function ovButtonIndex(binding)                    -- the pad's button number for a binding name (cached)
+  if ovIndex[binding] == nil then
+    local ok, i = pcall(C_GamePad.ButtonBindingToIndex, binding)
+    ovIndex[binding] = ok and tonumber(i) and i + 1 or false
+  end
+  return ovIndex[binding]
+end
+local l4Flash = 0
+overlay:SetScript("OnUpdate", function()
+  local ok, state = pcall(C_GamePad.GetDeviceMappedState)
+  local buttons = ok and type(state) == "table" and state.buttons or {}
+  local sticks = ok and type(state) == "table" and state.sticks or {}
+  for name, part in pairs(ovParts) do
+    local on = false
+    if part.binding then
+      local i = ovButtonIndex(part.binding)
+      on = i and buttons[i] and true or false
+    end
+    if name == "R4" then on = indWhat == "listen" end
+    if name == "L4" then on = GetTime() < l4Flash end
+    if part.shape == "stick" then
+      local st = sticks[name == "LS" and 1 or 2]
+      local x, y = st and st.x or 0, st and st.y or 0
+      part.dot:ClearAllPoints()
+      part.dot:SetPoint("CENTER", overlay, "TOPLEFT", (part.d[3] + x * 26) * OV_SCALE, -(part.d[4] - y * 26) * OV_SCALE)
+      on = on or math.abs(x) > 0.3 or math.abs(y) > 0.3
+    end
+    part.tex:SetShown(on)
+  end
+end)
+local function toggleOverlay()
+  overlay:SetShown(not overlay:IsShown())
+  if DB then DB.overlay = overlay:IsShown() end
+  l4Flash = GetTime() + 0.3
+end
+SH.F10 = toggleOverlay                                   -- L4, sent by the app
+
+------------------------------------------------------------------ first start: "reload once"
+-- On the very first start the app knows nothing of this game. The friends list, the guild roster and the quest log
+-- arrive from the server a few seconds after login; the hint waits for them (a reload before would save a thin list).
+local firstHint = { friends = false, guild = false, quests = false }
+local hintEvents = CreateFrame("Frame")
+for _, ev in ipairs({ "FRIENDLIST_UPDATE", "GUILD_ROSTER_UPDATE", "QUEST_LOG_UPDATE" }) do hintEvents:RegisterEvent(ev) end
+hintEvents:SetScript("OnEvent", function(_, event)
+  if event == "FRIENDLIST_UPDATE" then firstHint.friends = true
+  elseif event == "GUILD_ROSTER_UPDATE" then firstHint.guild = true
+  else firstHint.quests = true end
+  firstHint.show(false)
+end)
+function firstHint.show(force)
+  if not firstHint.armed or firstHint.done or (DB and DB.ctx) then return end
+  if not force and not (firstHint.friends and (firstHint.guild or not IsInGuild()) and firstHint.quests) then return end
+  firstHint.done = true
+  C_Timer.After(2, function()                          -- let the last updates settle
+    say("just learned about your game: your quests, friends, guild and bags. Reload once so voice typing "
+        .. "knows those names: double-press and hold R4, then Options > Refresh context.")
+  end)
+end
+
 ------------------------------------------------------------------ events
 owner:RegisterEvent("ADDON_LOADED")
 owner:RegisterEvent("PLAYER_LOGOUT")
@@ -1316,7 +1436,7 @@ end
 owner:SetScript("OnEvent", function(self, event, a1, a2)
   if event == "ADDON_ACTION_BLOCKED" or event == "ADDON_ACTION_FORBIDDEN" then
     note(event .. ": " .. tostring(a1) .. " " .. tostring(a2))
-  elseif event == "ADDON_LOADED" and a1 == "WowVoice" then
+  elseif event == "ADDON_LOADED" and a1 == "MySteamDeckGetsMe" then
     WowVoiceDB = WowVoiceDB or {}
     for k, v in pairs(DEFAULTS) do if WowVoiceDB[k] == nil then WowVoiceDB[k] = v end end
     if WowVoiceDB.cameraSaved then                     -- left by v0.2.3
@@ -1332,6 +1452,7 @@ owner:SetScript("OnEvent", function(self, event, a1, a2)
     for t in (DB.ctx or ""):gmatch("[^;]+") do ctxSaved[t:lower()] = true end
   elseif event == "PLAYER_LOGIN" then
     C_Timer.After(8, afterUpdate)
+    if DB.overlay then overlay:Show() end
     bindKeys()
     requestFriends()
     layout()
@@ -1345,7 +1466,11 @@ owner:SetScript("OnEvent", function(self, event, a1, a2)
             .. "systemctl --user status my-steam-deck-gets-me)")
       end
     end)
-    if not DB.ctx then setOutdated("never saved") end
+    if not DB.ctx then                                 -- first start: the app knows nothing of this game yet
+      setOutdated("never saved")
+      firstHint.armed = true                           -- shown once friends, guild and quests have loaded
+      C_Timer.After(20, function() firstHint.show(true) end)   -- at the latest
+    end
   elseif not DB then
     return
   elseif event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_WHISPER_INFORM" then
@@ -1378,9 +1503,11 @@ owner:SetScript("OnEvent", function(self, event, a1, a2)
   end
 end)
 
-SLASH_WOWVOICE1 = "/wowvoice"
+SLASH_WOWVOICE1 = "/deckme"
+SLASH_WOWVOICE2 = "/wowvoice"                          -- the old name keeps working
 SlashCmdList.WOWVOICE = function(msg)
   if msg == "ring" then openRing() return end
+  if msg == "overlay" then toggleOverlay() return end
   local where = msg:match("^pos%s+(%a+)")
   if where == "left" or where == "center" or where == "right" then
     DB.pos = where; say("wheel position: " .. where); if ring:IsShown() then layout() end return

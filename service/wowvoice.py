@@ -49,7 +49,7 @@ WOW_SV = (_WOW[0] if _WOW else Path.home() / "World of Warcraft/_forever_") / "W
 
 def context_file():
     """The WowVoice addon's saved file (written by WoW on /reload and logout); newest if several accounts."""
-    files = list(WOW_SV.glob("*/SavedVariables/WowVoice.lua"))
+    files = list(WOW_SV.glob("*/SavedVariables/MySteamDeckGetsMe.lua")) or list(WOW_SV.glob("*/SavedVariables/WowVoice.lua"))
     return max(files, key=lambda f: f.stat().st_mtime) if files else None
 
 
@@ -588,7 +588,8 @@ SIG_LISTEN, SIG_WORKING, SIG_IDLE = 10, 11, 12      # the in-game indicator: lis
 HELLO = 9                     # Shift+F9 (ring highlights use Shift+F1-8): "the tool runs" -> addon shows Ready
 HELLO_AFTER = tuple(range(3, 91, 3))  # every 3 s for 90 s after a UI load (loading screens eat keys); the
                                       # addon only reacts to the first one it gets
-APP_OLDER, ADDON_OLDER = 11, 12   # Shift+F11 / F12: the addon says which side must be updated (compat numbers)
+OVERLAY, APP_OLDER, ADDON_OLDER = 10, 11, 12   # Shift+F10: L4 shows / hides the button overlay;
+                                               # F11 / F12: the addon says which side must be updated (compat numbers)
 
 
 def main():
@@ -597,7 +598,7 @@ def main():
     parser.add_argument("--button", default=None, choices=["L4", "R4", "L5", "R5"])
     parser.add_argument("--engine", default="parakeet", choices=["parakeet", "qwen"],
                         help="parakeet: GPU ~0.3 s + names correction; qwen: GPU, names as context, ~3-4 s in game")
-    parser.add_argument("--names", default=str(HERE / "names.txt"))
+    parser.add_argument("--names", default=str(HERE / "wow_terms.txt"))
     parser.add_argument("--send-mode", default=None, choices=["countdown", "immediate", "wait"],
                         help="countdown: send after --countdown s (a tap sends now, a double tap stops it); "
                              "immediate: send at once; wait: a tap sends")
@@ -815,6 +816,10 @@ def main():
                 log(("dropped by Esc" if g[1] == "esc" else "sent by Enter") + " in the box")
                 pending.update(text=None, deadline=None, correcting=False)
             return
+        if kind == "pad" and g[1] == "L4":                # the addon's button overlay (for videos)
+            if wow_active() and not args.no_addon:
+                keyboard.highlight(OVERLAY)
+            return
         if kind == "pad":                                 # the addon acted on A / B; keep our state in step
             if pending["correcting"]:
                 pending["correcting"] = False             # A = corrections done, B = undone: back to the box
@@ -898,7 +903,7 @@ def main():
         ino = Inotify()
         for f in folders:
             ino.watch(f, IN_CLOSE_WRITE | IN_MOVED_TO)
-        triggers = {"Blizzard_GlueSavedVariables.lua", "WowVoice.lua"}
+        triggers = {"Blizzard_GlueSavedVariables.lua", "MySteamDeckGetsMe.lua", "WowVoice.lua"}
         plan = [time.monotonic() + d for d in (1, 8, 20)] if wow_running() else []   # started while WoW runs
         give_up = time.monotonic() + 180                  # retries while WoW isn't in front end here
         while True:
@@ -907,7 +912,7 @@ def main():
                 plan = [time.monotonic() + d for d in HELLO_AFTER]
                 give_up = time.monotonic() + 180
             for folder, name, _ in events:
-                if name == "WowVoice.lua":                    # /reload or logout: the addon's send mode
+                if name in ("MySteamDeckGetsMe.lua", "WowVoice.lua"):   # /reload or logout: the addon's send mode
                     mode, countdown = saved_send_mode(folder / name)
                     if mode and (mode, countdown or args.countdown) != (args.send_mode, args.countdown):
                         args.send_mode, args.countdown = mode, countdown or args.countdown

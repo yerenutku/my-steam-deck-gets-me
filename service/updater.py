@@ -22,7 +22,8 @@ from pathlib import Path
 REPO = "yerenutku/my-steam-deck-gets-me"
 ROOT = Path(__file__).resolve().parent.parent
 MARKER = ".installed-by-app"                 # in the addon folder: the installer put it there, so we may update it
-KEEP = ["service/names.txt"]                 # files the player edits: kept as they are across updates
+ADDON, OLD_ADDON = "MySteamDeckGetsMe", "WowVoice"   # the addon folder; its name until v0.5.15
+KEEP = []                                    # files the player edits: kept as they are across updates
 
 
 def git(*args, check=True):
@@ -60,20 +61,33 @@ def latest_release():
         return None
 
 
+def wow_roots():
+    """WoW's game folders (_forever_, _retail_, ...) in Steam's Proton prefixes."""
+    return sorted(r for r in (Path.home() / ".local/share/Steam/steamapps/compatdata").glob(
+        "*/pfx/drive_c/Program Files (x86)/World of Warcraft/_*_") if (r / "Interface/AddOns").is_dir())
+
+
 def addon_dirs():
-    return sorted((Path.home() / ".local/share/Steam/steamapps/compatdata").glob(
-        "*/pfx/drive_c/Program Files (x86)/World of Warcraft/_*_/Interface/AddOns/WowVoice"))
+    """The installed addon folders (the old name too, until the next update moves it)."""
+    out = []
+    for r in wow_roots():
+        for name in (ADDON, OLD_ADDON):
+            d = r / "Interface/AddOns" / name
+            if (d / f"{name}.toc").exists():
+                out.append(d)
+                break
+    return out
 
 
 def addon_compat(d):
-    m = re.search(r"^## X-Compat:\s*(\d+)", (d / "WowVoice.toc").read_text(errors="replace"), re.M)
+    m = re.search(r"^## X-Compat:\s*(\d+)", (d / f"{d.name}.toc").read_text(errors="replace"), re.M)
     return int(m.group(1)) if m else 1
 
 
 def saved_files():
     out = []
     for d in addon_dirs():
-        out += d.parents[2].glob("WTF/Account/*/SavedVariables/WowVoice.lua")
+        out += d.parents[2].glob(f"WTF/Account/*/SavedVariables/{ADDON}.lua")
     return out
 
 
@@ -122,17 +136,31 @@ def install(version, log, wait_before_addon=10):
         if not (d / MARKER).exists():
             log(f"update: addon in {d.parents[2].name} came from elsewhere (CurseForge?): left alone")
             continue
-        staging = d.with_name("WowVoice.new")
-        shutil.rmtree(staging, ignore_errors=True)
-        shutil.copytree(ROOT / "addon/WowVoice", staging)
-        (staging / MARKER).touch()
-        old_dir = d.with_name("WowVoice.old")
-        shutil.rmtree(old_dir, ignore_errors=True)
-        d.rename(old_dir)
-        staging.rename(d)
-        shutil.rmtree(old_dir, ignore_errors=True)
+        install_addon(d.parents[2], log)
         log(f"update: addon in {d.parents[2].name} is now {version}")
     return local_release()
+
+
+def install_addon(root, log):
+    """Put the addon into WoW folder `root` (swap in one rename) and move the old name's folder and saved file."""
+    addons = root / "Interface/AddOns"
+    target, staging, old_dir = addons / ADDON, addons / f"{ADDON}.new", addons / f"{ADDON}.old"
+    shutil.rmtree(staging, ignore_errors=True)
+    shutil.copytree(ROOT / "addon" / ADDON, staging)
+    (staging / MARKER).touch()
+    shutil.rmtree(old_dir, ignore_errors=True)
+    if target.exists():
+        target.rename(old_dir)
+    staging.rename(target)
+    shutil.rmtree(old_dir, ignore_errors=True)
+    previous = addons / OLD_ADDON
+    if (previous / MARKER).exists():                   # ours under the old name: gone, its data moves along
+        shutil.rmtree(previous, ignore_errors=True)
+        for sv in root.glob(f"WTF/Account/*/SavedVariables/{OLD_ADDON}.lua"):
+            new = sv.with_name(f"{ADDON}.lua")
+            if not new.exists():
+                shutil.copy2(sv, new)
+                log(f"update: saved data moved to the new addon name ({sv.parent.parent.name})")
 
 
 def restart_app(log):

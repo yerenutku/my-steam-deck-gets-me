@@ -1,0 +1,265 @@
+# WoW words the speech model often gets wrong: places, dungeons, items, chat abbreviations. Part of the app.
+# Misheard words are snapped to these after transcription (service/namefix.py). People's names are not here:
+# they come from the game itself (the addon's voice context: friends, guild, group, quests, bags, vendors).
+# --- WoW places, dungeons, items, chat abbreviations
+Deadmines
+Scarlet Monastery
+Blackrock Depths
+Blackrock Spire
+Molten Core
+Crossroads
+Stratholme
+Ironforge
+Hinterlands
+Zul'Farrak
+Onyxia
+Stockades
+Stormwind
+Ashenvale
+Stranglethorn
+Thunder Bluff
+Linen Cloth
+Silk Cloth
+Thorium Ore
+Arcane Crystal
+Arcanite Bar
+Heavy Leather Ball
+LFM
+LF2M
+WTS
+DPS
+AFK
+brb
+ty
+lol
+Wailing Caverns
+Ragefire Chasm
+Shadowfang Keep
+Blackfathom Deeps
+Gnomeregan
+Razorfen Kraul
+Razorfen Downs
+Uldaman
+Maraudon
+Sunken Temple
+Dire Maul
+Scholomance
+Zul'Gurub
+Blackwing Lair
+Ahn'Qiraj
+Naxxramas
+Orgrimmar
+Undercity
+Darnassus
+Elwynn Forest
+Westfall
+Redridge
+Duskwood
+Wetlands
+Arathi Highlands
+Hillsbrad
+Alterac Valley
+Warsong Gulch
+Arathi Basin
+Badlands
+Searing Gorge
+Burning Steppes
+Swamp of Sorrows
+Blasted Lands
+Tanaris
+Feralas
+Desolace
+Thousand Needles
+Dustwallow Marsh
+Un'Goro Crater
+Silithus
+Winterspring
+Felwood
+Azshara
+Eastern Plaguelands
+Western Plaguelands
+Barrens
+Durotar
+Mulgore
+Teldrassil
+Darkshore
+Stonetalon
+Booty Bay
+Gadgetzan
+Tarren Mill
+Southshore
+Everlook
+Runecloth
+Mageweave
+Mithril Ore
+Black Lotus
+Devilsaur Leather
+Elixir of the Mongoose
+Major Healing Potion
+Flask of Titans
+Righteous Orb
+Lionheart Helm
+WTB
+LFG
+OOM
+CC
+AoE
+HoT
+GZ
+gratz
+inc
+# --- cities and towns
+Stormwind City
+Thunder Bluff
+Ratchet
+Menethil Harbor
+Auberdine
+Astranaar
+Theramore
+Sentinel Hill
+Lakeshire
+Darkshire
+Goldshire
+Kharanos
+Brill
+Razor Hill
+Sen'jin Village
+Bloodhoof Village
+Camp Taurajo
+Brackenwall Village
+Light's Hope Chapel
+Cenarion Hold
+Thorium Point
+Kargath
+Aerie Peak
+Revantusk Village
+Nijel's Point
+Feathermoon Stronghold
+Splintertree Post
+Freewind Post
+Hammerfall
+Refuge Pointe
+Stonard
+Grom'gol
+Chillwind Camp
+# --- raids, dungeons (short forms too) and bosses
+Upper Blackrock Spire
+Lower Blackrock Spire
+UBRS
+LBRS
+BRD
+BWL
+ZG
+AQ
+AQ20
+AQ40
+Naxx
+MC
+SFK
+RFC
+WC
+BFD
+SM
+ZF
+Mara
+Strat
+Scholo
+Ony
+DM
+Ragnaros
+Nefarian
+Hakkar
+C'Thun
+Kel'Thuzad
+Van Cleef
+Baron Rivendare
+Rend Blackhand
+Drakkisath
+Ossirian
+Majordomo
+Arugal
+# --- classes and races
+Paladin
+Shaman
+Warlock
+Druid
+Rogue
+Hunter
+Priest
+Warrior
+Tauren
+Troll
+Orc
+Gnome
+Dwarf
+Night Elf
+# --- materials, herbs and common items
+Wool Cloth
+Copper Ore
+Tin Ore
+Iron Ore
+Gold Ore
+Silver Ore
+Dark Iron Ore
+Copper Bar
+Iron Bar
+Mithril Bar
+Thorium Bar
+Light Leather
+Medium Leather
+Heavy Leather
+Thick Leather
+Rugged Leather
+Peacebloom
+Silverleaf
+Earthroot
+Mageroyal
+Briarthorn
+Swiftthistle
+Bruiseweed
+Stranglekelp
+Kingsblood
+Liferoot
+Fadeleaf
+Goldthorn
+Khadgar's Whisker
+Sungrass
+Firebloom
+Gromsblood
+Dreamfoil
+Plaguebloom
+Golden Sansam
+Mountain Silversage
+Icecap
+Essence of Fire
+Essence of Earth
+Essence of Water
+Essence of Undeath
+Soul Shard
+Hearthstone
+Healing Potion
+Mana Potion
+Greater Healing Potion
+Superior Healing Potion
+Major Mana Potion
+Free Action Potion
+Linen Bandage
+Heavy Runecloth Bandage
+Felcloth
+Moonroot
+Star Ruby
+# --- jargon and abbreviations
+LF1M
+LF3M
+WTT
+OOM
+DoT
+HoT
+AoE
+rez
+aggro
+buff
+debuff
+nerf
+kiting
+pug

@@ -37,7 +37,8 @@ Start Battle.net and WoW. Shortly after you enter the world, **Voice ready** app
 to run Deadmines", let go: the text appears in a box under the chat and is sent after a 2-second countdown
 (**B** throws it away).
 
-Add your friends' and guild's names to `~/my-steam-deck-gets-me/service/names.txt` (one per line); the tool rereads it by itself.
+Names come from your game: friends, guild, group, quests, bags and vendors. The first time, the addon asks you
+to reload once (double-press and hold R4, then Options > Refresh context); after that it keeps them fresh.
 
 The tool sleeps until you start Battle.net or WoW: no microphone, no speech model, no CPU until then. While you play,
 the microphone opens at your first press and closes after 2 minutes without use.
