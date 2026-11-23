@@ -1,6 +1,6 @@
 {
- "version": "0.5.9",
+ "version": "0.5.10",
  "compat": 1,
  "after": "reload",
- "notes": "Test release: the in-game update with WoW's own popup."
+ "notes": "Fix: the update button's signal watcher."
 }

@@ -7,7 +7,7 @@ import os
 import select
 import struct
 
-IN_MODIFY, IN_OPEN, IN_CREATE = 0x002, 0x020, 0x100
+IN_MODIFY, IN_CLOSE_WRITE, IN_OPEN, IN_MOVED_TO, IN_CREATE = 0x002, 0x008, 0x020, 0x080, 0x100
 _IN_NONBLOCK, _IN_CLOEXEC = 0o4000, 0o2000000
 _libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
 
