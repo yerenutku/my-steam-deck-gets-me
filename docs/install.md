@@ -16,16 +16,20 @@ and starts the tool with the Deck. It's safe to run again: it skips what is alre
 
 Install WoW Forever first (Battle.net as a non-Steam game), so the installer can find WoW's AddOns folder.
 
-## 2. Two settings, one time only
+## 2. The camera lock (asked by the installer)
 
-**In WoW:** Options → Social → **Chat Style: Classic**. (The "IM" style keeps the chat box focused after sending.)
+While you pick a chat destination on the wheel, the right stick would also turn your camera. Steam stops that with a
+**mode shift** on R4. At the end, the installer offers three choices:
 
-**In Steam**, so the right stick doesn't turn the camera while the wheel is open:
-
-1. Steam → your WoW / Battle.net entry → **Controller settings** → **Edit layout**.
-2. **Back grip buttons:** remove any command from **R4**.
-3. **Right joystick:** open its settings → **Mode shift** → button **R4** → mode **Directional Pad**, and leave its
-   four directions **empty**.
+1. **Set it up for me.** You close Steam for a moment; the installer adds the mode shift to your Battle.net layout.
+   If your right stick already had a mode shift on any button, it is replaced; everything else stays as it is. Your
+   original is saved first, and the installer shows the one command that puts it back (the uninstaller offers it too).
+2. **Show me how**, to do it yourself in Steam:
+   your WoW / Battle.net entry → **Controller settings** → **Edit layout** →
+   - **Back grip buttons:** remove any command from **R4**.
+   - **Right joystick:** its settings → **Mode shift** → button **R4** → mode **Directional Pad**, and leave its
+     four directions **empty**.
+3. **Skip**, and run the installer again later.
 
 ## 3. Try it
 

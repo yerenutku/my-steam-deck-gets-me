@@ -10,6 +10,13 @@ echo "autostart removed"
 for wow in "$HOME"/.local/share/Steam/steamapps/compatdata/*/pfx/drive_c/"Program Files (x86)"/"World of Warcraft"/_*_; do
   [ -d "$wow/Interface/AddOns/WowVoice" ] && rm -rf "$wow/Interface/AddOns/WowVoice" && echo "addon removed from $(basename "$wow")"
 done
+if [ -d "$DIR/backups" ] && [ -t 0 ]; then
+  read -r -p "Put your original Steam controller layout back? Steam must be closed. [y/N] " answer
+  if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+    while pgrep -x steam >/dev/null; do read -r -p "Close Steam (Steam menu > Exit), then press Enter. " _; done
+    "$DIR/envs/sherpa/bin/python" "$DIR/service/steam_modeshift.py" restore
+  fi
+fi
 read -r -p "Also delete $DIR (models, settings, your dictation history)? [y/N] " answer
 if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
   rm -rf "$DIR" && echo "deleted $DIR"

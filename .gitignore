@@ -8,5 +8,6 @@ __pycache__/
 service/history/
 service/settings.json
 service/warmup.wav
+backups/
 lab/recordings*/
 lab/results*/

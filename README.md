@@ -51,7 +51,7 @@ In Desktop Mode, in Konsole:
 git clone https://github.com/yerenutku/my-steam-deck-gets-me.git ~/my-steam-deck-gets-me && bash ~/my-steam-deck-gets-me/install.sh
 ```
 
-Then two one-time settings (WoW chat style, one Steam controller setting): see **[Installation](docs/install.md)**.
+At the end it offers to set up the Steam controller for you. Details: **[Installation](docs/install.md)**.
 
 ## More
 
