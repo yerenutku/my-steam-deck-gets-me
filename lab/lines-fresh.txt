@@ -1,0 +1,30 @@
+# Fresh test set (check 2): new sentences, never used for tuning. Record with: python3 record.py --set fresh
+# Say them naturally; abbreviations the way you normally would.
+anyone up for Wailing Caverns, we have a tank already
+Do you have this quest?
+I need help!
+My pet is dying!
+I am dying!
+Heal me!
+Toren, can you bring some Runecloth to the bank
+LFG Scholomance, I'm a resto shaman
+the patrol is coming back, wait before you pull
+Fizzy Sparkwick, thanks for the buff
+how long until the raid starts
+We need to kill 10 more of this mob
+The item of the quest is somewhere here
+I'm going to Tanaris to farm some water elementals
+Jorin, can you help me with the quest in Duskwood
+gratz on the epic mount
+my repair bill is huge, I need gold
+Aldric Sunforge, are you healing or doing damage tonight
+WTB Black Lotus, paying well
+stop pulling extra mobs please, I'm a mage not a tank
+Malik, the summoning stone is at the entrance
+we wiped again, let's try one more time
+Stout Flagon, did you get the Righteous Orb
+I need to Hearthstone
+can someone open a portal to Orgrimmar
+I'll be back in two minutes, need to feed the cat
+Lil Pipsqueak and Frost Flagon are on their way to Blackrock Depths
+good night everyone, thanks for the run
