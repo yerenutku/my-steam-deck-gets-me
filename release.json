@@ -1,6 +1,6 @@
 {
- "version": "0.5.8",
+ "version": "0.5.9",
  "compat": 1,
  "after": "reload",
- "notes": "Update popups are WoW's own now: View focuses them, A / B answer."
+ "notes": "Test release: the in-game update with WoW's own popup."
 }
