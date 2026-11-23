@@ -588,9 +588,8 @@ SIG_LISTEN, SIG_WORKING, SIG_IDLE = 10, 11, 12      # the in-game indicator: lis
 HELLO = 9                     # Shift+F9 (ring highlights use Shift+F1-8): "the tool runs" -> addon shows Ready
 HELLO_AFTER = tuple(range(3, 91, 3))  # every 3 s for 90 s after a UI load (loading screens eat keys); the
                                       # addon only reacts to the first one it gets
-UPDATE_DONE, UPDATE_FAILED, ADDON_MISFIT = 10, 11, 12   # Shift+F10..F12: dialogs in the addon (updater.py)
-DLG_FOCUS, DLG_A, DLG_B = 1, 2, 3   # Alt+Shift+F1 View pressed: the addon's dialog takes the controller;
-                                    # F2 / F3: A / B answer it (key presses, so a /reload button may run)
+RELOAD, UPDATE_FAILED, ADDON_MISFIT = 10, 11, 12   # Shift+F10: the addon's "/reload" macro button (a key press may
+                                                   # run it); F11 / F12: popups in the addon (updater.py)
 
 
 def main():
@@ -682,7 +681,6 @@ def main():
             keyboard.signal(n)
 
     state = {"holding": False}                        # R4 held right now (main thread sets it)
-    dialog = {"until": 0}                             # View was pressed: A / B go to the addon's dialog until then
     jobs = queue.Queue()                              # transcriptions, one after another, off the main thread
 
     def idle():
@@ -818,15 +816,6 @@ def main():
                 log(("dropped by Esc" if g[1] == "esc" else "sent by Enter") + " in the box")
                 pending.update(text=None, deadline=None, correcting=False)
             return
-        if kind == "pad" and g[1] == "VIEW":              # View: an open dialog in the addon takes A / B
-            if wow_active() and not args.no_addon:
-                keyboard.alt_signal(DLG_FOCUS)
-                dialog["until"] = time.monotonic() + 60
-            return
-        if kind == "pad" and time.monotonic() < dialog["until"]:   # A / B answer the dialog, not the box
-            dialog["until"] = 0
-            keyboard.alt_signal(DLG_A if g[1] == "A" else DLG_B)
-            return
         if kind == "pad":                                 # the addon acted on A / B; keep our state in step
             if pending["correcting"]:
                 pending["correcting"] = False             # A = corrections done, B = undone: back to the box
@@ -951,10 +940,10 @@ def main():
     import updater
     update = {"busy": False, "misfit_said": False}
 
-    def run_update(version):
+    def run_update(version, wait_before_addon=10):
         try:
-            updater.install(version, log)
-            keyboard.highlight(UPDATE_DONE)               # addon: "Update finished: reload"
+            updater.install(version, log, wait_before_addon=wait_before_addon)
+            keyboard.highlight(RELOAD)                    # the addon's /reload button: the new addon loads
             time.sleep(1)
             updater.restart_app(log)
         except Exception:
@@ -983,6 +972,32 @@ def main():
                     pass
 
     threading.Thread(target=update_watch, daemon=True).start()
+
+    def accept_watch():
+        """ "Update now" in the game: the addon takes one TGA screenshot (players' own are JPG). Install at once."""
+        from inotify import IN_CLOSE_WRITE, IN_MOVED_TO, Inotify
+        if not updater.is_installed_copy():
+            return
+        ino = Inotify()
+        for d in updater.addon_dirs():
+            shots = d.parents[2] / "Screenshots"
+            shots.mkdir(exist_ok=True)
+            ino.watch(shots, IN_CLOSE_WRITE | IN_MOVED_TO)
+        while True:
+            for folder, name, _ in ino.read():
+                if not name.lower().endswith(".tga"):
+                    continue
+                (folder / name).unlink(missing_ok=True)
+                info = updater.latest_release()
+                if update["busy"] or not info or updater.vtuple(info["version"]) <= updater.vtuple(
+                        updater.local_release()["version"]):
+                    log("update: signal from the game, but nothing newer to install")
+                    continue
+                update["busy"] = True
+                log(f"update: 'Update now' pressed in the game -> {info['version']}")
+                threading.Thread(target=run_update, args=(info["version"], 0), daemon=True).start()
+
+    threading.Thread(target=accept_watch, daemon=True).start()
     threading.Thread(target=greeter, daemon=True).start()
 
     def on_term(*_):

@@ -19,7 +19,7 @@
 --           Ctrl+Shift+F6  send the box (no-op if it's closed)   F7 correction (stop the countdown)
 -- The ring's top slots must match service/ring.py (TOP).
 
-local VERSION = "0.5.7"
+local VERSION = "0.5.8"
 local DEFAULTS = { countdown = 2.0, mode = "countdown", channel = { type = "SAY", sector = 1 }, whispers = {}, recent = {},
                    pos = "right", button = "R4" }
 local TOP = { "Say", "Party", "Guild", "Whisper", "Friends", "Recent", "World", "Options" }  -- = service/ring.py
@@ -1079,7 +1079,6 @@ local CS = { F1 = openRing, F2 = closeRing, F3 = pick, F4 = openBox, F5 = startC
              F12 = function() indicate(nil) end }
 local SH = {}
 for i = 1, 8 do SH["F" .. i] = function() highlightSlot(i) end end
-local AS = {}                                           -- Alt+Shift+F<n>: more signals (F1 = R4 tapped: dialog focus)
 -- Shift+F9 = hello: the tool runs (it says so a few times after every login and /reload; the first one counts)
 local helloSeen = false
 SH.F9 = function()
@@ -1102,14 +1101,13 @@ end
 -- our box has focus: the keys arrive here
 box:SetScript("OnKeyDown", function(_, key)
   if IsShiftKeyDown() and IsControlKeyDown() then onSignal(CS, key, "box")
-  elseif IsShiftKeyDown() and IsAltKeyDown() then onSignal(AS, key, "box")
   elseif IsShiftKeyDown() then onSignal(SH, key, "box") end
 end)
 
 -- nothing has focus: override bindings to hidden buttons (a key binding click is a hardware event)
 local owner = CreateFrame("Frame")
 local function bindKeys()
-  for map, prefix in pairs({ [CS] = "CTRL-SHIFT-", [SH] = "SHIFT-", [AS] = "ALT-SHIFT-" }) do
+  for map, prefix in pairs({ [CS] = "CTRL-SHIFT-", [SH] = "SHIFT-" }) do
     for key in pairs(map) do
       local name = "WowVoice" .. prefix:gsub("%-", "") .. key
       local b = _G[name] or CreateFrame("Button", name, UIParent)
@@ -1277,99 +1275,16 @@ local function seeVendor()
   end
 end
 
------------------------------------------------------------------- dialog (updates): View focuses it, A / B answer
--- Many addon popups need a mouse; this one doesn't, and it never blocks play. The game's own controller handling
--- keeps View for itself, but the app reads the controller directly: View -> Alt+Shift+F1 (focus: the dialog swallows
--- the pad's buttons), then A / B -> Alt+Shift+F2 / F3, bound to the dialog's buttons. A key binding's click is a
--- hardware event, so a "/reload" macro button may run (an addon calling ReloadUI is blocked: "Interface action
--- failed"). Out of combat only (WoW forbids changing bindings and secure buttons in combat).
-local showDialog
-local dialog = CreateFrame("Frame", "WowVoiceDialog", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
-dialog:SetSize(460, 190)
-dialog:SetPoint("CENTER", 0, 160)
-dialog:SetFrameStrata("DIALOG")
-dialog:SetBackdrop({ bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-                     tile = true, tileSize = 16, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
-dialog:SetBackdropColor(0.05, 0.04, 0.03, 0.95)
-dialog:SetBackdropBorderColor(0.85, 0.65, 0.25, 1)
-dialog:Hide()
-local dlgTitle = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-dlgTitle:SetPoint("TOP", 0, -18)
-local dlgText = dialog:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-dlgText:SetPoint("TOP", dlgTitle, "BOTTOM", 0, -12)
-dlgText:SetWidth(410)
-dlgText:SetSpacing(3)
-local dlgHint = dialog:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-dlgHint:SetPoint("BOTTOM", 0, 54)
-dlgHint:SetTextColor(0.85, 0.75, 0.5)
-local dlgA = CreateFrame("Button", "WowVoiceDialogA", dialog, "UIPanelButtonTemplate, SecureActionButtonTemplate")
-dlgA:SetSize(180, 26)
-dlgA:RegisterForClicks("AnyUp")
-local dlgB = CreateFrame("Button", "WowVoiceDialogB", dialog, "UIPanelButtonTemplate")
-dlgB:SetSize(180, 26)
-dlgB:SetPoint("BOTTOMLEFT", dialog, "BOTTOM", 6, 18)
-local dlgQueue, dlgCurrent = {}, nil
-local function dlgLook(focused)
-  if focused then dialog:SetBackdropBorderColor(0.35, 1, 0.35, 1) else dialog:SetBackdropBorderColor(0.85, 0.65, 0.25, 1) end
-end
-
-local function dlgClose(which)
-  local d = dlgCurrent
-  dialog:EnableGamePadButton(false)
-  ClearOverrideBindings(dialog)
-  dlgLook(false)
-  dialog:Hide()
-  dlgCurrent = nil
-  if d and d[which] then d[which]() end
-  if #dlgQueue > 0 then C_Timer.After(0.3, function() if not dlgCurrent then showDialog(table.remove(dlgQueue, 1)) end end) end
-end
-AS.F1 = function()                                       -- View pressed (the app): now A / B answer the dialog
-  if not dlgCurrent or InCombatLockdown() then return end
-  dialog:EnableGamePadButton(true)                       -- the pad's buttons stop here (no jump); the app sends keys
-  SetOverrideBindingClick(dialog, true, "ALT-SHIFT-F2", "WowVoiceDialogA")
-  if dlgCurrent.b then SetOverrideBindingClick(dialog, true, "ALT-SHIFT-F3", "WowVoiceDialogB") end
-  dlgLook(true)
-  dlgHint:SetText(G("a") .. " " .. (dlgCurrent.a or "OK") .. (dlgCurrent.b and ("        " .. G("b") .. " " .. dlgCurrent.b) or ""))
-end
-dialog:SetScript("OnGamePadButtonDown", function() end)  -- swallowed: the answer comes as Alt+Shift+F2 / F3
-dlgA:SetScript("PreClick", function() dlgClose("onA") end)  -- then the secure part: "/reload" when d.reload
-dlgB:SetScript("OnClick", function() dlgClose("onB") end)
-
-showDialog = function(d)
-  if dlgCurrent or InCombatLockdown() then table.insert(dlgQueue, d) return end
-  dlgCurrent = d
-  dlgTitle:SetText(d.title)
-  dlgText:SetText(d.text or "")
-  dlgA:SetText(d.a or "OK")
-  dlgA:SetAttribute("type", d.reload and "macro" or nil)
-  dlgA:SetAttribute("macrotext", d.reload and "/reload" or nil)
-  dlgA:ClearAllPoints()
-  if d.b then
-    dlgB:SetText(d.b); dlgB:Show()
-    dlgA:SetPoint("BOTTOMRIGHT", dialog, "BOTTOM", -6, 18)
-  else
-    dlgB:Hide()
-    dlgA:SetPoint("BOTTOM", 0, 18)
-  end
-  dialog:SetHeight(dlgText:GetStringHeight() + 130)
-  dlgHint:SetText("Press View to answer with your controller")
-  dlgLook(false)
-  dialog:Show()
-end
-
--- what the app tells us (Shift+F10..F12, see the app's updater.py)
-SH.F10 = function()
-  showDialog({ title = "Update finished", text = "Reload to use the new version.", a = "Reload now", reload = true,
-               b = "Later" })
-end
-SH.F11 = function()
-  showDialog({ title = "Update failed", text = "Nothing was changed. The details are in the app's log:\n"
-               .. "~/my-steam-deck-gets-me/.cache/service.log" })
-end
-SH.F12 = function()
-  showDialog({ title = "Addon and app don't fit", text = "This addon version doesn't work with the installed app.\n"
-               .. "Update the addon (CurseForge), or run the app's installer again." })
-end
+------------------------------------------------------------------ updates: WoW's own popups
+-- WoW's popups (StaticPopup) take the controller natively: View focuses them, the buttons show their pad icons.
+-- "Update now" can't reload the game (WoW blocks that for addons: "Interface action failed") and the addon can't
+-- reach the app before a reload. So it takes one screenshot in TGA format (the player's own are JPG): the app
+-- watches the Screenshots folder, deletes it at once, installs the update and presses Shift+F10, bound to a
+-- "/reload" macro button (a key press may run it). The game reloads once, by itself.
+local reloadButton = CreateFrame("Button", "WowVoiceReload", UIParent, "SecureActionButtonTemplate")
+reloadButton:SetAttribute("type", "macro")
+reloadButton:SetAttribute("macrotext", "/reload")
+reloadButton:RegisterForClicks("AnyUp", "AnyDown")
 
 local function newer(a, b)                               -- version a > b ("0.5.10" > "0.5.9")
   local x, y = { strsplit(".", a) }, { strsplit(".", b) }
@@ -1380,6 +1295,33 @@ local function newer(a, b)                               -- version a > b ("0.5.
   return false
 end
 
+local function popup(name, def)
+  def.timeout, def.whileDead, def.hideOnEscape, def.preferredIndex = 0, true, true, 3
+  StaticPopupDialogs[name] = def
+end
+popup("WOWVOICE_UPDATE", { text = "%s", button1 = "Update now", button2 = "Later",
+  OnAccept = function(_, version)
+    DB.updateRequest = version
+    WowVoiceUpdate = nil
+    local format = GetCVar("screenshotFormat")
+    pcall(SetCVar, "screenshotFormat", "tga")
+    Screenshot()                                          -- the signal for the app (it deletes the file)
+    C_Timer.After(3, function() if format then pcall(SetCVar, "screenshotFormat", format) end end)
+    say("updating... the game reloads by itself in a few seconds.")
+  end,
+  OnCancel = function(_, _, reason) if reason == "clicked" then DB.updateSnooze = time() end end })
+popup("WOWVOICE_INFO", { text = "%s", button1 = OKAY })
+local function info(text) StaticPopup_Show("WOWVOICE_INFO", text) end
+
+-- what the app tells us (Shift+F11 / F12; Shift+F10 is the /reload key, bound at login)
+SH.F11 = function()
+  info("My Steam Deck Gets Me\n\nThe update failed. Nothing was changed.\nDetails: ~/my-steam-deck-gets-me/.cache/service.log")
+end
+SH.F12 = function()
+  info("My Steam Deck Gets Me\n\nThis addon version doesn't work with the installed app.\n"
+       .. "Update the addon (CurseForge), or run the app's installer again.")
+end
+
 local function offerUpdate(always)                      -- the app left an offer in our saved file (WowVoiceUpdate)
   local U = WowVoiceUpdate
   if U and U.version and not newer(U.version, VERSION) then WowVoiceUpdate = nil; U = nil end   -- already have it
@@ -1388,15 +1330,11 @@ local function offerUpdate(always)                      -- the app left an offer
     return
   end
   if not always and DB.updateSnooze and time() - DB.updateSnooze < 12 * 3600 then return end
-  local text = (U.notes and U.notes ~= "" and (U.notes .. "\n\n") or "")
-    .. (U.addon and "The app and this addon are updated; the game reloads once."
-        or "This updates the app. The addon came from elsewhere: update it there (CurseForge).")
-  showDialog({ title = "Update available: v" .. U.version, text = text, a = "Update now", b = "Later", reload = true,
-    onA = function()
-      DB.updateRequest = U.version                       -- the app sees it as soon as WoW saves (the /reload)
-      WowVoiceUpdate = nil
-    end,
-    onB = function() DB.updateSnooze = time() end })
+  local text = "My Steam Deck Gets Me\n\nUpdate available: v" .. U.version
+    .. (U.notes and U.notes ~= "" and ("\n\n" .. U.notes) or "")
+    .. (U.addon and "\n\nThe game reloads once, by itself."
+        or "\n\nThis updates the app. The addon came from elsewhere: update it there (CurseForge).")
+  StaticPopup_Show("WOWVOICE_UPDATE", text, nil, U.version)
 end
 
 local function afterUpdate()                            -- first start of a new version: what's left to do
@@ -1406,11 +1344,10 @@ local function afterUpdate()                            -- first start of a new 
   DB.seenRelease = VERSION
   if first then return end
   if R.after == "restart_wow" then
-    showDialog({ title = "One more step", text = "Updated to v" .. VERSION .. ". Quit WoW completely and start it again"
-                 .. " to finish the update." })
+    info("My Steam Deck Gets Me\n\nUpdated to v" .. VERSION .. ".\nQuit WoW completely and start it again to finish.")
   elseif R.after == "restart_steam" then
-    showDialog({ title = "One more step", text = "Updated to v" .. VERSION .. ". Restart Steam to finish the update"
-                 .. " (Desktop Mode: Steam menu > Exit; Game Mode: restart the Deck)." })
+    info("My Steam Deck Gets Me\n\nUpdated to v" .. VERSION .. ".\nRestart Steam to finish (Desktop Mode: Steam menu "
+         .. "> Exit; Game Mode: restart the Deck).")
   else
     say("updated to v" .. VERSION .. (R.notes and R.notes ~= "" and (": " .. R.notes) or ""))
   end
@@ -1423,7 +1360,6 @@ owner:RegisterEvent("QUEST_LOG_UPDATE")
 owner:RegisterEvent("MERCHANT_SHOW")
 owner:RegisterEvent("MERCHANT_UPDATE")
 owner:RegisterEvent("PLAYER_LOGIN")
-owner:RegisterEvent("PLAYER_REGEN_ENABLED")
 owner:RegisterEvent("ADDON_ACTION_BLOCKED")
 owner:RegisterEvent("ADDON_ACTION_FORBIDDEN")
 for _, ev in ipairs({ "CHAT_MSG_WHISPER", "CHAT_MSG_WHISPER_INFORM", "CHAT_MSG_SAY", "CHAT_MSG_YELL",
@@ -1448,11 +1384,10 @@ owner:SetScript("OnEvent", function(self, event, a1, a2)
     DB.unitMenu = nil
     ctxSaved = {}
     for t in (DB.ctx or ""):gmatch("[^;]+") do ctxSaved[t:lower()] = true end
-  elseif event == "PLAYER_REGEN_ENABLED" then
-    if not dlgCurrent and #dlgQueue > 0 then showDialog(table.remove(dlgQueue, 1)) end
   elseif event == "PLAYER_LOGIN" then
     C_Timer.After(8, function() afterUpdate(); offerUpdate() end)
     bindKeys()
+    SetOverrideBindingClick(owner, true, "SHIFT-F10", "WowVoiceReload")   -- the app's reload key
     requestFriends()
     layout()
     if IsInGuild() then
