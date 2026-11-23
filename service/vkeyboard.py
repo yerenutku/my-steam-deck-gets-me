@@ -112,6 +112,15 @@ class VirtualKeyboard:
             self._tap(FKEYS[n])
             self._key(KEY_LEFTSHIFT, False)
 
+    def alt_signal(self, n):
+        """Alt+Shift+F<n>: a second set of invisible signals for the addon (types no character)."""
+        with self.lock:
+            self._key(KEY_LEFTALT, True)
+            self._key(KEY_LEFTSHIFT, True)
+            self._tap(FKEYS[n])
+            self._key(KEY_LEFTSHIFT, False)
+            self._key(KEY_LEFTALT, False)
+
     def signal(self, n):
         """Ctrl+Shift+F<n>: an invisible signal for the WowVoice addon (types no character)."""
         with self.lock:

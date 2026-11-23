@@ -589,6 +589,7 @@ HELLO = 9                     # Shift+F9 (ring highlights use Shift+F1-8): "the 
 HELLO_AFTER = tuple(range(3, 91, 3))  # every 3 s for 90 s after a UI load (loading screens eat keys); the
                                       # addon only reacts to the first one it gets
 UPDATE_DONE, UPDATE_FAILED, ADDON_MISFIT = 10, 11, 12   # Shift+F10..F12: dialogs in the addon (updater.py)
+TAP_FOCUS = 1                 # Alt+Shift+F1: R4 tapped with nothing to send -> the addon's dialog takes A / B
 
 
 def main():
@@ -853,6 +854,8 @@ def main():
         elif kind == "tap":
             if pending["text"] is not None:
                 send_pending("tap")
+            elif wow_active() and not args.no_addon:
+                keyboard.alt_signal(TAP_FOCUS)            # addon: an open dialog takes the controller (A / B)
         elif kind == "double_tap":
             if pending["text"] is not None and not pending["correcting"]:
                 signal(SIG_CORRECT)                       # addon: stop the bar, open the correction menu
