@@ -53,6 +53,18 @@ def context_file():
     return max(files, key=lambda f: f.stat().st_mtime) if files else None
 
 
+def saved_send_mode(path):
+    """The send mode the player chose on the wheel, as the addon saved it: (mode, countdown) or (None, None).
+    The addon is the one place the player sees and changes it, so it wins over the tool's own settings.json."""
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except (OSError, AttributeError):
+        return None, None
+    m = re.search(r'\["mode"\]\s*=\s*"(countdown|immediate|wait)"', text)
+    c = re.search(r'\["countdown"\]\s*=\s*([\d.]+)', text)
+    return (m.group(1) if m else None), (float(c.group(1)) if c else None)
+
+
 def read_context(path):
     """The addon's voice context: ["ctx"] = "term;term;…" and ["ctxAt"] = unix time."""
     try:
@@ -596,8 +608,9 @@ def main():
         saved = json.loads(SETTINGS.read_text())
     except (OSError, ValueError):
         saved = {}
-    args.send_mode = args.send_mode or saved.get("send_mode", "countdown")
-    args.countdown = args.countdown or saved.get("countdown", 2.0)
+    sv_mode, sv_countdown = saved_send_mode(context_file())   # the addon's saved choice wins
+    args.send_mode = args.send_mode or sv_mode or saved.get("send_mode", "countdown")
+    args.countdown = args.countdown or sv_countdown or saved.get("countdown", 2.0)
     args.button = args.button or saved.get("button", "R4")
 
     def save_settings():
@@ -891,6 +904,13 @@ def main():
             if any(name in triggers for _, name, _ in events):
                 plan = [time.monotonic() + d for d in HELLO_AFTER]
                 give_up = time.monotonic() + 180
+            for folder, name, _ in events:
+                if name == "WowVoice.lua":                    # /reload or logout: the addon's send mode
+                    mode, countdown = saved_send_mode(folder / name)
+                    if mode and (mode, countdown or args.countdown) != (args.send_mode, args.countdown):
+                        args.send_mode, args.countdown = mode, countdown or args.countdown
+                        save_settings()
+                        log(f"send mode from the addon: {args.send_mode} {args.countdown:g} s")
             while plan and plan[0] <= time.monotonic():
                 plan.pop(0)
                 if wow_active():
