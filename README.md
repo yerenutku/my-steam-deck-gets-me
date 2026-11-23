@@ -2,11 +2,33 @@
 
 **Talk to your party without taking your hands off the Steam Deck.**
 
-Hold **R4**, say “Anyone up for Deadmines?”, and let go. Your words appear as text in **WoW Forever’s in-game chat**. Use the right stick to pick a channel or a friend, fix a word with the D-pad, and choose when the message goes out. Speech recognition runs locally using the Deck’s built-in mic.
+Open-source voice-to-text for **WoW Forever**. Speak into the Deck’s built-in mic, and it transcribes your words locally. Your mic audio stays on your Deck.
 
-[Install on your Steam Deck](#install) · [See the controls](#how-to-play)
+[Install on your Steam Deck](#install) · [See the controls](#how-to-play) · [Compare test results](#test-results)
 
-![Illustrated guide to opening the chat wheel with R4 and picking a destination with the right stick](docs/images/destination-wheel.png)
+## Hold R4 and talk
+
+Hold **R4**, say “Anyone up for Deadmines?”, and let go. Your words appear as text for your last chat destination.
+
+![Holding R4 turns on the listening indicator, which shows who you’re talking to](docs/images/hold-r4.png)
+
+## Pick who you’re talking to
+
+Press **R4** twice and hold the second press to open the wheel. Aim with the right stick to pick Party, Guild, a friend, or another destination. Keep holding **R4** while you speak.
+
+![The destination wheel shows chat channels and people you can select with the right stick](docs/images/destination-wheel.png)
+
+## Fix a word with the D-pad
+
+Double-tap **R4** while a message is waiting. Use the **D-pad** to pick a word, then choose an alternative or remove it. Hold **R4** to say the word again.
+
+![The correction panel shows how to select and change a word before sending](docs/images/correction.png)
+
+## Send when you’re ready
+
+Open **Options** on the wheel to send immediately, set a **2-, 3-, or 5-second countdown**, or choose **Wait for me** and press **A** when you’re ready. Press **B** to discard a message that’s waiting.
+
+![The Options wheel shows countdown, manual send, and immediate send alongside the Commands menu](docs/images/send-options.png)
 
 ## How to play
 
@@ -31,9 +53,50 @@ git clone https://github.com/yerenutku/my-steam-deck-gets-me.git ~/my-steam-deck
 
 The installer sets up the SteamOS companion and the in-game addon. It also offers to configure Steam Input so the right stick can aim at the wheel without turning the camera. Launch WoW, wait for **Voice ready**, then hold **R4** and say something. [Full installation guide](docs/install.md)
 
+## Test results
+
+We tested six speech models and five engines across **93 WoW chat recordings** from one player using the built-in mic on a Steam Deck OLED. We compared Decktation’s transcription setup and Voxpression’s Whisper model. Voxpression also learns names and corrections in the app, which this test didn’t measure.
+
+| Transcription setup | 51 lab lines | 28 fresh lines | 14 in-game dictations |
+| --- | ---: | ---: | ---: |
+| **My Steam Deck Gets Me** | **14.2%** | **9.4%** | **5.2%** |
+| Decktation’s setup | 20.8% | 14.9% | 6.2% |
+| Voxpression’s model | 33.5% | 20.3% | 15.5% |
+| Voxpression’s model with a names prompt | 21.6% | 13.4% | — |
+
+The table shows **word error rate**. Lower is better. We tuned on the lab lines and saved the fresh lines for a separate check. On those 28 fresh lines, our setup had **37% lower word error rate** than Decktation’s setup. The gap was smaller on the 14 in-game dictations.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/accuracy-dark.png">
+  <img alt="Word error rates for the tested transcription setups across the three sets" src="docs/charts/accuracy-light.png">
+</picture>
+
+**What made the difference?** The names correction step helps with player names and WoW terms. With the same Parakeet setup, it brought the fresh-set error rate from **13.4% to 9.4%**. Running Parakeet on the Deck’s GPU took about **0.3 seconds of compute per line**, compared with about **1.3 seconds** for Decktation’s CPU setup. In live use, text appeared about **one second after releasing R4**.
+
+<details>
+<summary>Speed and in-game frame rate</summary>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/speed-dark.png">
+  <img alt="Compute time and fresh-set word error rate for ten transcription setups" src="docs/charts/speed-light.png">
+</picture>
+
+Qwen3-ASR was more accurate on the fresh set (**7.4%** word error rate). It took about **3–5 seconds** per line with WoW running, which is why we shipped the faster Parakeet setup.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/fps-dark.png">
+  <img alt="WoW frame rates at idle and during transcription with different setups" src="docs/charts/fps-light.png">
+</picture>
+
+In our uncapped in-game test, WoW ran at **52–58 FPS** during Parakeet transcription. The slowest frame took **37 ms**.
+
+</details>
+
+[Full lab report](docs/lab-report.md) · [Run the tests yourself](docs/run-the-tests.md)
+
 ## Recognition and privacy
 
-Recognition uses an English speech model on the Deck’s GPU and a word list to help with WoW terms such as **Deadmines** and **Ironforge**. You can add your friends’ and guildmates’ names to `service/names.txt`. In testing on one Steam Deck OLED, text appeared about **one second** after releasing R4. [Benchmarks and test setup](docs/lab-report.md) · [Run the tests yourself](docs/run-the-tests.md)
+Recognition uses an English speech model on the Deck’s GPU and a word list to help with WoW terms such as **Deadmines** and **Ironforge**. You can add your friends’ and guildmates’ names to `service/names.txt`.
 
 Speech recognition runs locally. The tool keeps audio and transcripts for up to 200 recent dictations in `service/history/` on your Deck. You can delete those files any time.
 
