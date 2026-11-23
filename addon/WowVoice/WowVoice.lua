@@ -19,7 +19,7 @@
 --           Ctrl+Shift+F6  send the box (no-op if it's closed)   F7 correction (stop the countdown)
 -- The ring's top slots must match service/ring.py (TOP).
 
-local VERSION = "0.5.11"
+local VERSION = "0.5.12"
 local DEFAULTS = { countdown = 2.0, mode = "countdown", channel = { type = "SAY", sector = 1 }, whispers = {}, recent = {},
                    pos = "right", button = "R4" }
 local TOP = { "Say", "Party", "Guild", "Whisper", "Friends", "Recent", "World", "Options" }  -- = service/ring.py
@@ -1275,82 +1275,26 @@ local function seeVendor()
   end
 end
 
------------------------------------------------------------------- updates: WoW's own popups
--- WoW's popups (StaticPopup) take the controller natively: View focuses them, the buttons show their pad icons.
--- "Update now" can't reload the game (WoW blocks that for addons: "Interface action failed") and the addon can't
--- reach the app before a reload. So it takes one screenshot in TGA format (the player's own are JPG): the app
--- watches the Screenshots folder, deletes it at once, installs the update and presses Shift+F10, bound to a
--- "/reload" macro button (a key press may run it). The game reloads once, by itself.
-local reloadButton = CreateFrame("Button", "WowVoiceReload", UIParent, "SecureActionButtonTemplate")
-reloadButton:SetAttribute("type", "macro")
-reloadButton:SetAttribute("macrotext", "/reload")
-reloadButton:RegisterForClicks("AnyUp", "AnyDown")
-
-local function newer(a, b)                               -- version a > b ("0.5.10" > "0.5.9")
-  local x, y = { strsplit(".", a) }, { strsplit(".", b) }
-  for i = 1, 3 do
-    local p, q = tonumber(x[i]) or 0, tonumber(y[i]) or 0
-    if p ~= q then return p > q end
-  end
-  return false
-end
-
-local function popup(name, def)
-  def.timeout, def.whileDead, def.hideOnEscape, def.preferredIndex = 0, true, true, 3
-  StaticPopupDialogs[name] = def
-end
-popup("WOWVOICE_UPDATE", { text = "%s", button1 = "Update now", button2 = "Later",
-  OnAccept = function(_, version)
-    DB.updateRequest = version
-    WowVoiceUpdate = nil
-    local format = GetCVar("screenshotFormat")
-    pcall(SetCVar, "screenshotFormat", "tga")
-    Screenshot()                                          -- the signal for the app (it deletes the file)
-    C_Timer.After(3, function() if format then pcall(SetCVar, "screenshotFormat", format) end end)
-    say("updating... the game reloads by itself in a few seconds.")
-  end,
-  OnCancel = function(_, _, reason) if reason == "clicked" then DB.updateSnooze = time() end end })
-popup("WOWVOICE_INFO", { text = "%s", button1 = OKAY })
-local function info(text) StaticPopup_Show("WOWVOICE_INFO", text) end
-
--- what the app tells us (Shift+F11 / F12; Shift+F10 is the /reload key, bound at login)
-SH.F11 = function()
-  info("My Steam Deck Gets Me\n\nThe update failed. Nothing was changed.\nDetails: ~/my-steam-deck-gets-me/.cache/service.log")
-end
-SH.F12 = function()
-  info("My Steam Deck Gets Me\n\nThis addon version doesn't work with the installed app.\n"
-       .. "Update the addon (CurseForge), or run the app's installer again.")
-end
-
-local function offerUpdate(always)                      -- the app left an offer in our saved file (WowVoiceUpdate)
-  local U = WowVoiceUpdate
-  if U and U.version and not newer(U.version, VERSION) then WowVoiceUpdate = nil; U = nil end   -- already have it
-  if not (U and U.version) then
-    if always then say("no update waiting.") end
-    return
-  end
-  if not always and DB.updateSnooze and time() - DB.updateSnooze < 12 * 3600 then return end
-  local text = "My Steam Deck Gets Me\n\nUpdate available: v" .. U.version
-    .. (U.notes and U.notes ~= "" and ("\n\n" .. U.notes) or "")
-    .. (U.addon and "\n\nThe game reloads once, by itself."
-        or "\n\nThis updates the app. The addon came from elsewhere: update it there (CurseForge).")
-  StaticPopup_Show("WOWVOICE_UPDATE", text, nil, U.version)
-end
-
-local function afterUpdate()                            -- first start of a new version: what's left to do
+------------------------------------------------------------------ updates (done by the app, while WoW is closed)
+-- The app installs new releases by itself when Battle.net or WoW starts, before WoW loads this addon. Here only a
+-- chat line on the first start of a new version (Release.lua: what this version is and what is left to do).
+-- No popups: WoW's StaticPopups and secure buttons from an addon got "blocked by Blizzard UI" on this client.
+local function afterUpdate()
   local R = WowVoiceRelease
   if not (R and R.version == VERSION) or DB.seenRelease == VERSION then return end
   local first = DB.seenRelease == nil                   -- a fresh install: nothing to report
   DB.seenRelease = VERSION
   if first then return end
-  if R.after == "restart_wow" then
-    info("My Steam Deck Gets Me\n\nUpdated to v" .. VERSION .. ".\nQuit WoW completely and start it again to finish.")
-  elseif R.after == "restart_steam" then
-    info("My Steam Deck Gets Me\n\nUpdated to v" .. VERSION .. ".\nRestart Steam to finish (Desktop Mode: Steam menu "
-         .. "> Exit; Game Mode: restart the Deck).")
-  else
-    say("updated to v" .. VERSION .. (R.notes and R.notes ~= "" and (": " .. R.notes) or ""))
-  end
+  local todo = R.after == "restart_wow" and " |cffffd100Quit WoW completely and start it again to finish.|r"
+            or R.after == "restart_steam" and " |cffffd100Restart Steam to finish (Desktop Mode: Steam menu > Exit;"
+                                               .. " Game Mode: restart the Deck).|r"
+            or ""
+  say("updated to v" .. VERSION .. (R.notes and R.notes ~= "" and (": " .. R.notes) or "") .. "." .. todo)
+end
+
+SH.F12 = function()                                     -- the app: this addon's version doesn't fit the app
+  say("|cffff8060this addon version doesn't work with the installed app.|r Update the addon (CurseForge), or run "
+      .. "the app's installer again.")
 end
 
 ------------------------------------------------------------------ events
@@ -1378,16 +1322,15 @@ owner:SetScript("OnEvent", function(self, event, a1, a2)
       WowVoiceDB.cameraSaved = nil
     end
     DB = WowVoiceDB
-    DB.updateRequest = nil                             -- it reached the app with the save of the reload that sent it
+    DB.updateRequest, DB.updateSnooze = nil, nil       -- (left by v0.5.0-0.5.11's update button)
     DB.log = {}
     note("loaded v" .. VERSION)
     DB.unitMenu = nil
     ctxSaved = {}
     for t in (DB.ctx or ""):gmatch("[^;]+") do ctxSaved[t:lower()] = true end
   elseif event == "PLAYER_LOGIN" then
-    C_Timer.After(8, function() afterUpdate(); offerUpdate() end)
+    C_Timer.After(8, afterUpdate)
     bindKeys()
-    SetOverrideBindingClick(owner, true, "SHIFT-F10", "WowVoiceReload")   -- the app's reload key
     requestFriends()
     layout()
     if IsInGuild() then
@@ -1436,7 +1379,6 @@ end)
 SLASH_WOWVOICE1 = "/wowvoice"
 SlashCmdList.WOWVOICE = function(msg)
   if msg == "ring" then openRing() return end
-  if msg == "update" then offerUpdate(true) return end
   local where = msg:match("^pos%s+(%a+)")
   if where == "left" or where == "center" or where == "right" then
     DB.pos = where; say("wheel position: " .. where); if ring:IsShown() then layout() end return

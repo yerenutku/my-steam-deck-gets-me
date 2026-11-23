@@ -1,10 +1,10 @@
-"""Updates from GitHub releases, offered and started in the game.
+"""Updates from GitHub releases, installed by the app itself while WoW is closed (no button, nothing to press).
 
-  check  (when the app wakes, i.e. Battle.net starts, so WoW isn't running yet): ask GitHub for the newest release;
-         if it is newer, leave an offer in the addon's saved file (WowVoiceUpdate = {...}); the addon shows a dialog.
-  install (the player pressed "Update now": the addon saved DB.updateRequest and reloaded): git checkout of the
-         release tag, packages, then the addon files, but only if the installer put the addon there (marker file;
-         an addon from CurseForge is left to CurseForge). Afterwards the app restarts itself.
+  When the app wakes (Battle.net starts) and when Wow.exe starts (before WoW loads its addons): ask GitHub for the
+  newest release; if it is newer: git checkout of the release tag, packages, then the addon files, but only if the
+  installer put the addon there (marker file; an addon from CurseForge is left to CurseForge). Then the app restarts
+  itself. In the game the addon writes "updated to vX" (and "restart WoW / Steam" when the release needs it).
+  (v0.5.0-0.5.11 had an in-game "Update now" button: WoW blocked its popups and reload. Removed.)
 Only works in an installed copy (a git clone of the public repo); the developer's own copy never updates itself.
 
 release.json (repo root): {"version": "0.5.0", "compat": 1, "after": "reload|restart_wow|restart_steam", "notes": "…"}
@@ -77,34 +77,23 @@ def saved_files():
     return out
 
 
-def _lua(s):
-    return '"' + str(s).replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n") + '"'
-
-
-def write_offer(info, log):
-    """Leave (or clear, info=None) the offer in the addon's saved file. WoW must not be running: it rewrites that
-    file at logout. WoW loads it at the next login, the addon shows the dialog."""
-    ours = all((d / MARKER).exists() for d in addon_dirs())
-    for f in saved_files():
-        text = f.read_text(encoding="utf-8", errors="replace")
-        text = re.sub(r"\nWowVoiceUpdate = (?:nil|\{.*?\n\})\n", "\n", text, flags=re.S)
-        if info:
-            text = text.rstrip("\n") + "\n" + (
-                f'WowVoiceUpdate = {{\n["version"] = {_lua(info["version"])},\n["notes"] = {_lua(info.get("notes", ""))},\n'
-                f'["addon"] = {"true" if ours else "false"},\n}}\n')
-        f.write_text(text, encoding="utf-8")
-    if info:
-        log(f"update: {info['version']} available (now {local_release()['version']}); offered in the game")
-
-
-def check(wow_running, log, wow_just_started=False):
-    """Offer a newer release in the game. Only while WoW hasn't loaded the saved file yet: when the app wakes (WoW
-    closed) or right after Wow.exe starts (WoW reads the file when you enter the world, writes it at logout)."""
+def auto_update(wow_running, log, wow_just_started=False):
+    """Install a newer release now, if WoW hasn't loaded its addons yet. Returns True if the app was updated (it
+    restarts itself then)."""
     if not is_installed_copy() or (wow_running() and not wow_just_started):
-        return
+        return False
     info = latest_release()
-    newer = info and vtuple(info["version"]) > vtuple(local_release()["version"])
-    write_offer(info if newer else None, log)
+    if not info or vtuple(info["version"]) <= vtuple(local_release()["version"]):
+        return False
+    log(f"update: {local_release()['version']} -> {info['version']}")
+    try:
+        install(info["version"], log, wait_before_addon=0)
+    except Exception:
+        import traceback
+        log("update FAILED (nothing changed; next try at the next start):\n" + traceback.format_exc())
+        return False
+    restart_app(log)
+    return True
 
 
 def install(version, log, wait_before_addon=10):

@@ -588,8 +588,7 @@ SIG_LISTEN, SIG_WORKING, SIG_IDLE = 10, 11, 12      # the in-game indicator: lis
 HELLO = 9                     # Shift+F9 (ring highlights use Shift+F1-8): "the tool runs" -> addon shows Ready
 HELLO_AFTER = tuple(range(3, 91, 3))  # every 3 s for 90 s after a UI load (loading screens eat keys); the
                                       # addon only reacts to the first one it gets
-RELOAD, UPDATE_FAILED, ADDON_MISFIT = 10, 11, 12   # Shift+F10: the addon's "/reload" macro button (a key press may
-                                                   # run it); F11 / F12: popups in the addon (updater.py)
+ADDON_MISFIT = 12             # Shift+F12: the addon says "this addon version doesn't fit the app"
 
 
 def main():
@@ -908,13 +907,6 @@ def main():
                 plan = [time.monotonic() + d for d in HELLO_AFTER]
                 give_up = time.monotonic() + 180
             for folder, name, _ in events:
-                if name == "WowVoice.lua":                    # /reload: "Update now" pressed in the game?
-                    m = re.search(r'\["updateRequest"\]\s*=\s*"([\d.]+)"',
-                                  (folder / name).read_text(encoding="utf-8", errors="replace"))
-                    if m and not update["busy"] and updater.vtuple(m.group(1)) > updater.vtuple(
-                            updater.local_release()["version"]):
-                        update["busy"] = True
-                        threading.Thread(target=run_update, args=(m.group(1),), daemon=True).start()
                 if name == "WowVoice.lua":                    # /reload or logout: the addon's send mode
                     mode, countdown = saved_send_mode(folder / name)
                     if mode and (mode, countdown or args.countdown) != (args.send_mode, args.countdown):
@@ -938,21 +930,9 @@ def main():
                     plan.append(time.monotonic() + 5)        # WoW not in front (Desktop Mode): try again soon
 
     import updater
-    update = {"busy": False, "misfit_said": False}
+    update = {"misfit_said": False}
 
-    def run_update(version, wait_before_addon=10):
-        try:
-            updater.install(version, log, wait_before_addon=wait_before_addon)
-            keyboard.highlight(RELOAD)                    # the addon's /reload button: the new addon loads
-            time.sleep(1)
-            updater.restart_app(log)
-        except Exception:
-            import traceback
-            log("update FAILED:\n" + traceback.format_exc())
-            keyboard.highlight(UPDATE_FAILED)
-            update["busy"] = False
-
-    threading.Thread(target=updater.check, args=(wow_running, log), daemon=True).start()
+    threading.Thread(target=updater.auto_update, args=(wow_running, log), daemon=True).start()
 
     def update_watch():
         """Check again every time WoW starts (inotify: Wow.exe opened), not only when the app wakes up."""
@@ -966,38 +946,13 @@ def main():
         while True:
             if any(n.lower() == "wow.exe" for _, n, _ in ino.read()):
                 time.sleep(3)
-                updater.check(wow_running, log, wow_just_started=True)
+                updater.auto_update(wow_running, log, wow_just_started=True)
                 time.sleep(60)                            # one check per start
                 while ino.read(0):
                     pass
 
     threading.Thread(target=update_watch, daemon=True).start()
 
-    def accept_watch():
-        """ "Update now" in the game: the addon takes one TGA screenshot (players' own are JPG). Install at once."""
-        from inotify import IN_CLOSE_WRITE, IN_MOVED_TO, Inotify
-        if not updater.is_installed_copy():
-            return
-        ino = Inotify()
-        for d in updater.addon_dirs():
-            shots = d.parents[2] / "Screenshots"
-            shots.mkdir(exist_ok=True)
-            ino.watch(shots, IN_CLOSE_WRITE | IN_MOVED_TO)
-        while True:
-            for folder, name, _ in ino.read():
-                if not name.lower().endswith(".tga"):
-                    continue
-                (folder / name).unlink(missing_ok=True)
-                info = updater.latest_release()
-                if update["busy"] or not info or updater.vtuple(info["version"]) <= updater.vtuple(
-                        updater.local_release()["version"]):
-                    log("update: signal from the game, but nothing newer to install")
-                    continue
-                update["busy"] = True
-                log(f"update: 'Update now' pressed in the game -> {info['version']}")
-                threading.Thread(target=run_update, args=(info["version"], 0), daemon=True).start()
-
-    threading.Thread(target=accept_watch, daemon=True).start()
     threading.Thread(target=greeter, daemon=True).start()
 
     def on_term(*_):

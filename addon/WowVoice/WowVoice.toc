@@ -3,8 +3,8 @@
 ## Notes: Voice chat-typing for WoW on the Steam Deck. Needs the companion tool. /wowvoice
 ## IconTexture: Interface\AddOns\WowVoice\Media\addon_icon_128
 ## Author: wowvoice
-## Version: 0.5.11
-## SavedVariables: WowVoiceDB, WowVoiceUpdate
+## Version: 0.5.12
+## SavedVariables: WowVoiceDB
 ## X-Compat: 1
 
 Release.lua
