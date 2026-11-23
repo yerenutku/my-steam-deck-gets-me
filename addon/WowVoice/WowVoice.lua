@@ -19,7 +19,7 @@
 --           Ctrl+Shift+F6  send the box (no-op if it's closed)   F7 correction (stop the countdown)
 -- The ring's top slots must match service/ring.py (TOP).
 
-local VERSION = "0.5.5"
+local VERSION = "0.5.6"
 local DEFAULTS = { countdown = 2.0, mode = "countdown", channel = { type = "SAY", sector = 1 }, whispers = {}, recent = {},
                    pos = "right", button = "R4" }
 local TOP = { "Say", "Party", "Guild", "Whisper", "Friends", "Recent", "World", "Options" }  -- = service/ring.py
@@ -1277,10 +1277,12 @@ local function seeVendor()
   end
 end
 
------------------------------------------------------------------- dialog (updates): tap R4 to focus it, A / B answer
--- Many addon popups need a mouse; this one doesn't. It never blocks play: only after a tap on R4 (the app reads R4
--- and sends Alt+Shift+F1) does it take A / B. Not the game's own navigation (View, auto-highlight): an addon frame
--- hooked into it taints the game's code for the session (see GamepadSuite's notes). Out of combat only.
+------------------------------------------------------------------ dialog (updates): View focuses it, A / B answer
+-- Many addon popups need a mouse; this one doesn't, and it never blocks play. The game's own controller handling
+-- keeps View for itself, but the app reads the controller directly: View -> Alt+Shift+F1 (focus: the dialog swallows
+-- the pad's buttons), then A / B -> Alt+Shift+F2 / F3, bound to the dialog's buttons. A key binding's click is a
+-- hardware event, so a "/reload" macro button may run (an addon calling ReloadUI is blocked: "Interface action
+-- failed"). Out of combat only (WoW forbids changing bindings and secure buttons in combat).
 local showDialog
 local dialog = CreateFrame("Frame", "WowVoiceDialog", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
 dialog:SetSize(460, 190)
@@ -1300,9 +1302,10 @@ dlgText:SetSpacing(3)
 local dlgHint = dialog:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 dlgHint:SetPoint("BOTTOM", 0, 54)
 dlgHint:SetTextColor(0.85, 0.75, 0.5)
-local dlgA = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
+local dlgA = CreateFrame("Button", "WowVoiceDialogA", dialog, "UIPanelButtonTemplate, SecureActionButtonTemplate")
 dlgA:SetSize(180, 26)
-local dlgB = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
+dlgA:RegisterForClicks("AnyUp")
+local dlgB = CreateFrame("Button", "WowVoiceDialogB", dialog, "UIPanelButtonTemplate")
 dlgB:SetSize(180, 26)
 dlgB:SetPoint("BOTTOMLEFT", dialog, "BOTTOM", 6, 18)
 local dlgQueue, dlgCurrent = {}, nil
@@ -1313,23 +1316,23 @@ end
 local function dlgClose(which)
   local d = dlgCurrent
   dialog:EnableGamePadButton(false)
+  ClearOverrideBindings(dialog)
   dlgLook(false)
   dialog:Hide()
   dlgCurrent = nil
   if d and d[which] then d[which]() end
   if #dlgQueue > 0 then C_Timer.After(0.3, function() if not dlgCurrent then showDialog(table.remove(dlgQueue, 1)) end end) end
 end
-AS.F1 = function()                                       -- R4 tapped: now A / B answer the dialog
+AS.F1 = function()                                       -- View pressed (the app): now A / B answer the dialog
   if not dlgCurrent or InCombatLockdown() then return end
-  dialog:EnableGamePadButton(true)
+  dialog:EnableGamePadButton(true)                       -- the pad's buttons stop here (no jump); the app sends keys
+  SetOverrideBindingClick(dialog, true, "ALT-SHIFT-F2", "WowVoiceDialogA")
+  if dlgCurrent.b then SetOverrideBindingClick(dialog, true, "ALT-SHIFT-F3", "WowVoiceDialogB") end
   dlgLook(true)
   dlgHint:SetText(G("a") .. " " .. (dlgCurrent.a or "OK") .. (dlgCurrent.b and ("        " .. G("b") .. " " .. dlgCurrent.b) or ""))
 end
-dialog:SetScript("OnGamePadButtonDown", function(_, button)
-  if button == "PAD1" then dlgClose("onA")
-  elseif button == "PAD2" and dlgCurrent and dlgCurrent.b then dlgClose("onB") end
-end)
-dlgA:SetScript("OnClick", function() dlgClose("onA") end)
+dialog:SetScript("OnGamePadButtonDown", function() end)  -- swallowed: the answer comes as Alt+Shift+F2 / F3
+dlgA:SetScript("PreClick", function() dlgClose("onA") end)  -- then the secure part: "/reload" when d.reload
 dlgB:SetScript("OnClick", function() dlgClose("onB") end)
 
 showDialog = function(d)
@@ -1338,6 +1341,8 @@ showDialog = function(d)
   dlgTitle:SetText(d.title)
   dlgText:SetText(d.text or "")
   dlgA:SetText(d.a or "OK")
+  dlgA:SetAttribute("type", d.reload and "macro" or nil)
+  dlgA:SetAttribute("macrotext", d.reload and "/reload" or nil)
   dlgA:ClearAllPoints()
   if d.b then
     dlgB:SetText(d.b); dlgB:Show()
@@ -1347,14 +1352,14 @@ showDialog = function(d)
     dlgA:SetPoint("BOTTOM", 0, 18)
   end
   dialog:SetHeight(dlgText:GetStringHeight() + 130)
-  dlgHint:SetText("Tap " .. G("r4") .. " to answer with your controller")
+  dlgHint:SetText("Press View to answer with your controller")
   dlgLook(false)
   dialog:Show()
 end
 
 -- what the app tells us (Shift+F10..F12, see the app's updater.py)
 SH.F10 = function()
-  showDialog({ title = "Update finished", text = "Reload to use the new version.", a = "Reload now", onA = ReloadUI,
+  showDialog({ title = "Update finished", text = "Reload to use the new version.", a = "Reload now", reload = true,
                b = "Later" })
 end
 SH.F11 = function()
@@ -1366,8 +1371,18 @@ SH.F12 = function()
                .. "Update the addon (CurseForge), or run the app's installer again." })
 end
 
+local function newer(a, b)                               -- version a > b ("0.5.10" > "0.5.9")
+  local x, y = { strsplit(".", a) }, { strsplit(".", b) }
+  for i = 1, 3 do
+    local p, q = tonumber(x[i]) or 0, tonumber(y[i]) or 0
+    if p ~= q then return p > q end
+  end
+  return false
+end
+
 local function offerUpdate(always)                      -- the app left an offer in our saved file (WowVoiceUpdate)
   local U = WowVoiceUpdate
+  if U and U.version and not newer(U.version, VERSION) then WowVoiceUpdate = nil; U = nil end   -- already have it
   if not (U and U.version) then
     if always then say("no update waiting.") end
     return
@@ -1376,11 +1391,10 @@ local function offerUpdate(always)                      -- the app left an offer
   local text = (U.notes and U.notes ~= "" and (U.notes .. "\n\n") or "")
     .. (U.addon and "The app and this addon are updated; the game reloads once."
         or "This updates the app. The addon came from elsewhere: update it there (CurseForge).")
-  showDialog({ title = "Update available: v" .. U.version, text = text, a = "Update now", b = "Later",
+  showDialog({ title = "Update available: v" .. U.version, text = text, a = "Update now", b = "Later", reload = true,
     onA = function()
-      DB.updateRequest = U.version                       -- the app sees it as soon as WoW saves (the reload)
+      DB.updateRequest = U.version                       -- the app sees it as soon as WoW saves (the /reload)
       WowVoiceUpdate = nil
-      ReloadUI()
     end,
     onB = function() DB.updateSnooze = time() end })
 end

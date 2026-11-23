@@ -589,7 +589,8 @@ HELLO = 9                     # Shift+F9 (ring highlights use Shift+F1-8): "the 
 HELLO_AFTER = tuple(range(3, 91, 3))  # every 3 s for 90 s after a UI load (loading screens eat keys); the
                                       # addon only reacts to the first one it gets
 UPDATE_DONE, UPDATE_FAILED, ADDON_MISFIT = 10, 11, 12   # Shift+F10..F12: dialogs in the addon (updater.py)
-TAP_FOCUS = 1                 # Alt+Shift+F1: R4 tapped with nothing to send -> the addon's dialog takes A / B
+DLG_FOCUS, DLG_A, DLG_B = 1, 2, 3   # Alt+Shift+F1 View pressed: the addon's dialog takes the controller;
+                                    # F2 / F3: A / B answer it (key presses, so a /reload button may run)
 
 
 def main():
@@ -681,6 +682,7 @@ def main():
             keyboard.signal(n)
 
     state = {"holding": False}                        # R4 held right now (main thread sets it)
+    dialog = {"until": 0}                             # View was pressed: A / B go to the addon's dialog until then
     jobs = queue.Queue()                              # transcriptions, one after another, off the main thread
 
     def idle():
@@ -816,6 +818,15 @@ def main():
                 log(("dropped by Esc" if g[1] == "esc" else "sent by Enter") + " in the box")
                 pending.update(text=None, deadline=None, correcting=False)
             return
+        if kind == "pad" and g[1] == "VIEW":              # View: an open dialog in the addon takes A / B
+            if wow_active() and not args.no_addon:
+                keyboard.alt_signal(DLG_FOCUS)
+                dialog["until"] = time.monotonic() + 60
+            return
+        if kind == "pad" and time.monotonic() < dialog["until"]:   # A / B answer the dialog, not the box
+            dialog["until"] = 0
+            keyboard.alt_signal(DLG_A if g[1] == "A" else DLG_B)
+            return
         if kind == "pad":                                 # the addon acted on A / B; keep our state in step
             if pending["correcting"]:
                 pending["correcting"] = False             # A = corrections done, B = undone: back to the box
@@ -854,8 +865,6 @@ def main():
         elif kind == "tap":
             if pending["text"] is not None:
                 send_pending("tap")
-            elif wow_active() and not args.no_addon:
-                keyboard.alt_signal(TAP_FOCUS)            # addon: an open dialog takes the controller (A / B)
         elif kind == "double_tap":
             if pending["text"] is not None and not pending["correcting"]:
                 signal(SIG_CORRECT)                       # addon: stop the bar, open the correction menu

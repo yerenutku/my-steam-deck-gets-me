@@ -10,7 +10,8 @@ import threading
 import time
 
 BUTTONS = {"L4": (13, 1), "R4": (13, 2), "L5": (9, 7), "R5": (10, 0)}
-PAD = {"A": (8, 7), "B": (8, 5)}           # watched too: the tool must know when the box was sent / dropped
+PAD = {"A": (8, 7), "B": (8, 5),            # watched too: the tool must know when the box was sent / dropped
+       "VIEW": (9, 4)}                       # View (above the left stick): focuses the addon's dialog
 
 
 def find_deck_hidraw():
