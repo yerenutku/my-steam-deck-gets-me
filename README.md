@@ -13,17 +13,40 @@ appear in WoW's chat. Accurate, fast, and entirely on your Deck. Nothing is sent
   0.3 s, without a noticeable drop in frame rate.
 - **Made for a controller.** Pick the chat channel or a friend with the right stick on an in-game wheel. Fix a
   misheard word with the D-pad. No keyboard needed.
-- **Light.** It sleeps until you start Battle.net, and the microphone only opens while you hold the button.
+- **Light.** It sleeps until you start Battle.net. While you play, the microphone opens at your first press
+  and closes after 2 minutes without use.
 - **Private.** Speech recognition runs locally. No account, no cloud. Your last 200 dictations are kept on
   the Deck only (for corrections and testing); you can delete them any time.
+
+## Test results
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/charts/accuracy-dark.png">
   <img alt="Word error rate of My Steam Deck Gets Me compared with other setups and tools" src="docs/charts/accuracy-light.png">
 </picture>
 
-We tested 6 speech models and 5 engines on real WoW chat. My Steam Deck Gets Me makes about a third fewer mistakes than
-the next-best existing tool we tested, at the same or better speed. → **[Read the lab report](docs/lab-report.md)**
+We tested 6 speech models and 5 engines on the same recordings of real WoW chat. My Steam Deck Gets Me makes about a
+third fewer mistakes than the next-best existing tool we tested.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/speed-dark.png">
+  <img alt="Accuracy versus compute time per line for ten setups" src="docs/charts/speed-light.png">
+</picture>
+
+**Why not the most accurate model?** Qwen3-ASR 1.7B makes about 2 points fewer mistakes, but it needs 1.2–2.7 s per
+line on the Deck's GPU with the game closed, and **3–5 s while WoW runs**. In real play that felt too slow. Our setup
+needs **0.3 s**, about 1 second from letting go to text in chat.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/fps-dark.png">
+  <img alt="WoW frame rate normally and while transcribing, for six setups" src="docs/charts/fps-light.png">
+</picture>
+
+**And the game?** WoW alone keeps the Deck's GPU about 98 % and its CPU about 87 % busy. Engines on the CPU made the
+game stutter (17 instead of 30 FPS). Our engine runs on the GPU: WoW kept **52–58 FPS** while it transcribed, with no
+frame slower than 37 ms.
+
+→ All models, engines, settings and numbers: **[the lab report](docs/lab-report.md)**
 
 ## How to use it
 
