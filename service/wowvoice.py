@@ -586,7 +586,8 @@ SIG_BOX, SIG_COUNTDOWN, SIG_SEND, SIG_CORRECT = 4, 5, 6, 7
 SIG_REPLACE, SIG_REPLACE_DONE = 8, 9               # correction: the typed word replaces the selected word
 SIG_LISTEN, SIG_WORKING, SIG_IDLE = 10, 11, 12      # the in-game indicator: listening / transcribing / done
 HELLO = 9                     # Shift+F9 (ring highlights use Shift+F1-8): "the tool runs" -> addon shows Ready
-HELLO_AFTER = (4, 12, 30, 60) # seconds after a UI load; the addon only reacts to the first one it gets
+HELLO_AFTER = tuple(range(3, 91, 3))  # every 3 s for 90 s after a UI load (loading screens eat keys); the
+                                      # addon only reacts to the first one it gets
 UPDATE_DONE, UPDATE_FAILED, ADDON_MISFIT = 10, 11, 12   # Shift+F10..F12: dialogs in the addon (updater.py)
 
 
@@ -923,7 +924,8 @@ def main():
                 plan.pop(0)
                 if wow_active():
                     keyboard.highlight(HELLO)
-                    log("hello sent to the addon")
+                    if len(plan) + 1 in (len(HELLO_AFTER), 3):  # log only the first of a round
+                        log("hello: sending to the addon")
                     misfit = [d for d in updater.addon_dirs()
                               if updater.addon_compat(d) != updater.local_release().get("compat", 1)]
                     if misfit and not update["misfit_said"]:
@@ -950,6 +952,25 @@ def main():
             update["busy"] = False
 
     threading.Thread(target=updater.check, args=(wow_running, log), daemon=True).start()
+
+    def update_watch():
+        """Check again every time WoW starts (inotify: Wow.exe opened), not only when the app wakes up."""
+        from inotify import IN_OPEN, Inotify
+        folders = [d.parents[2] for d in updater.addon_dirs()]
+        if not folders or not updater.is_installed_copy():
+            return
+        ino = Inotify()
+        for f in folders:
+            ino.watch(f, IN_OPEN)
+        while True:
+            if any(n.lower() == "wow.exe" for _, n, _ in ino.read()):
+                time.sleep(3)
+                updater.check(wow_running, log, wow_just_started=True)
+                time.sleep(60)                            # one check per start
+                while ino.read(0):
+                    pass
+
+    threading.Thread(target=update_watch, daemon=True).start()
     threading.Thread(target=greeter, daemon=True).start()
 
     def on_term(*_):

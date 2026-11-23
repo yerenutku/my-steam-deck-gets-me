@@ -97,9 +97,10 @@ def write_offer(info, log):
         log(f"update: {info['version']} available (now {local_release()['version']}); offered in the game")
 
 
-def check(wow_running, log):
-    """At wake-up: offer a newer release in the game (only while WoW is closed)."""
-    if not is_installed_copy() or wow_running():
+def check(wow_running, log, wow_just_started=False):
+    """Offer a newer release in the game. Only while WoW hasn't loaded the saved file yet: when the app wakes (WoW
+    closed) or right after Wow.exe starts (WoW reads the file when you enter the world, writes it at logout)."""
+    if not is_installed_copy() or (wow_running() and not wow_just_started):
         return
     info = latest_release()
     newer = info and vtuple(info["version"]) > vtuple(local_release()["version"])
