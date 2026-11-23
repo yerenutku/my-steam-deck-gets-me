@@ -73,8 +73,7 @@ The table shows **word error rate**. Lower is better. We tuned on the lab lines 
 
 **What made the difference?** The names correction step helps with player names and WoW terms. With the same Parakeet setup, it brought the fresh-set error rate from **13.4% to 9.4%**. Running Parakeet on the Deck’s GPU took about **0.3 seconds of compute per line**, compared with about **1.3 seconds** for Decktation’s CPU setup. In live use, text appeared about **one second after releasing R4**.
 
-<details>
-<summary>Speed and in-game frame rate</summary>
+### Speed and in-game frame rate
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/charts/speed-dark.png">
@@ -89,8 +88,6 @@ Qwen3-ASR was more accurate on the fresh set (**7.4%** word error rate). It took
 </picture>
 
 In our uncapped in-game test, WoW ran at **52–58 FPS** during Parakeet transcription. The slowest frame took **37 ms**.
-
-</details>
 
 [Full lab report](docs/lab-report.md) · [Run the tests yourself](docs/run-the-tests.md)
 

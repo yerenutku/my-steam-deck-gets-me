@@ -739,8 +739,10 @@ def main():
     if not a.no_install:
         out = Path(a.out)
         out.mkdir(parents=True, exist_ok=True)
+        overlay = HERE.parent / "addon/MySteamDeckGetsMeOverlay/Media"   # the Deck picture: the overlay addon's
+        overlay.mkdir(parents=True, exist_ok=True)
         for name, img in layers.items():
-            img.save(out / f"{name}.tga", compression=None)
+            img.save((overlay if name.startswith("deck_") else out) / f"{name}.tga", compression=None)
     print("preview:", a.preview, "| layers:", len(layers), "| installed:", not a.no_install)
 
 

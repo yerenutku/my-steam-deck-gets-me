@@ -3,7 +3,7 @@
 ## Notes: Voice chat-typing for WoW on the Steam Deck. Needs the companion tool. /deckme
 ## IconTexture: Interface\AddOns\MySteamDeckGetsMe\Media\addon_icon_128
 ## Author: yerenutku
-## Version: 0.6.0
+## Version: 0.6.1
 ## SavedVariables: WowVoiceDB
 ## X-Compat: 1
 

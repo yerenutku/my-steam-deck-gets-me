@@ -1,0 +1,9 @@
+## Interface: 16001, 11509, 20506
+## Title: My Steam Deck Gets Me: Button Overlay
+## Notes: A Steam Deck picture that lights up the buttons you press, for videos. L4 (with the My Steam Deck Gets Me app) or /deckoverlay shows / hides it.
+## IconTexture: Interface\AddOns\MySteamDeckGetsMeOverlay\Media\deck_glow
+## Author: yerenutku
+## Version: 1.0.0
+## SavedVariables: MySteamDeckGetsMeOverlayDB
+
+MySteamDeckGetsMeOverlay.lua
