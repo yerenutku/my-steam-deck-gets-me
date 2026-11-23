@@ -1,6 +1,6 @@
 {
- "version": "0.5.13",
+ "version": "0.5.14",
  "compat": 1,
  "after": "reload",
- "notes": "Test release: automatic update."
+ "notes": "Says which part to update when the app and the addon don't fit."
 }

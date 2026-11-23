@@ -19,7 +19,7 @@
 --           Ctrl+Shift+F6  send the box (no-op if it's closed)   F7 correction (stop the countdown)
 -- The ring's top slots must match service/ring.py (TOP).
 
-local VERSION = "0.5.13"
+local VERSION = "0.5.14"
 local DEFAULTS = { countdown = 2.0, mode = "countdown", channel = { type = "SAY", sector = 1 }, whispers = {}, recent = {},
                    pos = "right", button = "R4" }
 local TOP = { "Say", "Party", "Guild", "Whisper", "Friends", "Recent", "World", "Options" }  -- = service/ring.py
@@ -1292,9 +1292,11 @@ local function afterUpdate()
   say("updated to v" .. VERSION .. (R.notes and R.notes ~= "" and (": " .. R.notes) or "") .. "." .. todo)
 end
 
-SH.F12 = function()                                     -- the app: this addon's version doesn't fit the app
-  say("|cffff8060this addon version doesn't work with the installed app.|r Update the addon (CurseForge), or run "
-      .. "the app's installer again.")
+SH.F11 = function()                                     -- the app: the app is older than this addon
+  say("|cffff8060the app is older than this addon.|r Restart WoW: it updates itself.")
+end
+SH.F12 = function()                                     -- the app: this addon is older than the app
+  say("|cffff8060this addon is older than the app.|r Update it in CurseForge.")
 end
 
 ------------------------------------------------------------------ events

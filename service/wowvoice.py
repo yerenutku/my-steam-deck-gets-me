@@ -588,7 +588,7 @@ SIG_LISTEN, SIG_WORKING, SIG_IDLE = 10, 11, 12      # the in-game indicator: lis
 HELLO = 9                     # Shift+F9 (ring highlights use Shift+F1-8): "the tool runs" -> addon shows Ready
 HELLO_AFTER = tuple(range(3, 91, 3))  # every 3 s for 90 s after a UI load (loading screens eat keys); the
                                       # addon only reacts to the first one it gets
-ADDON_MISFIT = 12             # Shift+F12: the addon says "this addon version doesn't fit the app"
+APP_OLDER, ADDON_OLDER = 11, 12   # Shift+F11 / F12: the addon says which side must be updated (compat numbers)
 
 
 def main():
@@ -919,13 +919,13 @@ def main():
                     keyboard.highlight(HELLO)
                     if len(plan) + 1 in (len(HELLO_AFTER), 3):  # log only the first of a round
                         log("hello: sending to the addon")
-                    misfit = [d for d in updater.addon_dirs()
-                              if updater.addon_compat(d) != updater.local_release().get("compat", 1)]
-                    if misfit and not update["misfit_said"]:
+                    mine = updater.local_release().get("compat", 1)
+                    theirs = [updater.addon_compat(d) for d in updater.addon_dirs()]
+                    if any(c != mine for c in theirs) and not update["misfit_said"]:
                         time.sleep(0.3)
-                        keyboard.highlight(ADDON_MISFIT)      # the addon says: update the addon
+                        keyboard.highlight(APP_OLDER if max(theirs) > mine else ADDON_OLDER)
                         update["misfit_said"] = True
-                        log("addon and app don't fit (compat number differs): told the addon")
+                        log(f"addon (compat {theirs}) and app (compat {mine}) don't fit: told the addon")
                 elif not plan and time.monotonic() < give_up:
                     plan.append(time.monotonic() + 5)        # WoW not in front (Desktop Mode): try again soon
 
