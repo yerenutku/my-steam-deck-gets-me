@@ -1,94 +1,48 @@
 # My Steam Deck Gets Me
 
-**Voice chat-typing for World of Warcraft on the Steam Deck.** Hold a back button, speak, let go: your words
-appear in WoW's chat. Accurate, fast, and entirely on your Deck. Nothing is sent to the internet.
+**Talk to your party without taking your hands off the Steam Deck.**
 
-<!-- screenshot: the wheel in game -->
+Hold **R4**, say “Anyone up for Deadmines?”, and let go. Your words appear as text in **WoW Forever’s in-game chat**. Use the right stick to pick a channel or a friend, fix a word with the D-pad, and choose when the message goes out. Speech recognition runs locally using the Deck’s built-in mic.
 
-## Why
+[Install on your Steam Deck](#install) · [See the controls](#how-to-play)
 
-- **Accurate with WoW words.** Dungeons, zones, items, "LF2M", and your friends' names. A names step fixes what
-  speech models usually get wrong.
-- **Fast.** About 1 second from letting go to text in chat. The speech model runs on the Deck's GPU in about
-  0.3 s, without a noticeable drop in frame rate.
-- **Made for a controller.** Pick the chat channel or a friend with the right stick on an in-game wheel. Fix a
-  misheard word with the D-pad. No keyboard needed.
-- **Light.** It sleeps until you start Battle.net. While you play, the microphone opens at your first press
-  and closes after 2 minutes without use.
-- **Private.** Speech recognition runs locally. No account, no cloud. Your last 200 dictations are kept on
-  the Deck only (for corrections and testing); you can delete them any time.
+![Illustrated guide to opening the chat wheel with R4 and picking a destination with the right stick](docs/images/destination-wheel.png)
 
-## Test results
+## How to play
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/accuracy-dark.png">
-  <img alt="Word error rate of My Steam Deck Gets Me compared with other setups and tools" src="docs/charts/accuracy-light.png">
-</picture>
+| Gesture | What it does |
+| --- | --- |
+| **Hold R4**, speak, then release | Dictate to your last chat destination. The listening card shows where your message is going. |
+| **Press R4 twice and hold the second press** | Open the destination wheel. Aim with the right stick to pick Say, Party, Guild, a whisper, or another destination. Keep holding R4 while you speak. |
+| **Double-tap R4** while a message is waiting | Open the correction menu. Use the D-pad to select a word and cycle through alternatives or remove it. Hold **R4** to say the word again. |
+| **Press A** or **tap R4** while a message is waiting | Send it now. Press **B** to discard it. |
 
-We tested 6 speech models and 5 engines on the same recordings of real WoW chat. My Steam Deck Gets Me makes about a
-third fewer mistakes than the next-best existing tool we tested.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/speed-dark.png">
-  <img alt="Accuracy versus compute time per line for ten setups" src="docs/charts/speed-light.png">
-</picture>
-
-**Why not the most accurate model?** Qwen3-ASR 1.7B makes about 2 points fewer mistakes, but it needs 1.2–2.7 s per
-line on the Deck's GPU with the game closed, and **3–5 s while WoW runs**. In real play that felt too slow. Our setup
-needs **0.3 s**, about 1 second from letting go to text in chat.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/fps-dark.png">
-  <img alt="WoW frame rate normally and while transcribing, for six setups" src="docs/charts/fps-light.png">
-</picture>
-
-**And the game?** WoW alone keeps the Deck's GPU about 98 % and its CPU about 87 % busy. Engines on the CPU made the
-game stutter (17 instead of 30 FPS). Our engine runs on the GPU: WoW kept **52–58 FPS** while it transcribed, with no
-frame slower than 37 ms.
-
-→ All models, engines, settings and numbers: **[the lab report](docs/lab-report.md)**
-
-## How to use it
-
-| Back button R4 | What happens |
-|---|---|
-| **Hold**, speak, let go | Text goes to your last channel; sent after a short countdown |
-| **Double-press and hold** | The wheel opens: aim with the right stick at Say, Party, Guild, Whisper, Friends… then speak |
-| **Double-press** | Correction menu: D-pad picks a word and its alternatives; hold R4 to say one word again |
-| **A** / **B** | Send now / throw away |
-
-Options on the wheel: countdown of 2, 3 or 5 seconds, "Wait for me", or "Send immediately".
-
-## Requirements
-
-- Steam Deck with SteamOS (tested on the OLED model); Desktop Mode for the installation, then play in Game
-  or Desktop Mode
-- WoW Forever (Classic-based client) through Proton
-- About 2 GB of free space
+Open **Options** on the wheel to send immediately, wait for you to press send, or use a **2-, 3-, or 5-second countdown**. The default countdown is 2 seconds.
 
 ## Install
 
-In Desktop Mode, in Konsole:
+You’ll need a **Steam Deck running SteamOS**, **WoW Forever** (the Classic-based World of Warcraft client) set up through Battle.net as a non-Steam game with Proton, and about **2 GB of free space**. Dictation is in English. The tool was tested on a Steam Deck OLED and can be used in Game Mode or Desktop Mode.
+
+Switch to **Desktop Mode**, open **Konsole**, and run:
 
 ```bash
 git clone https://github.com/yerenutku/my-steam-deck-gets-me.git ~/my-steam-deck-gets-me && bash ~/my-steam-deck-gets-me/install.sh
 ```
 
-At the end it offers to set up the Steam controller for you. Details: **[Installation](docs/install.md)**.
+The installer sets up the SteamOS companion and the in-game addon. It also offers to configure Steam Input so the right stick can aim at the wheel without turning the camera. Launch WoW, wait for **Voice ready**, then hold **R4** and say something. [Full installation guide](docs/install.md)
 
-## More
+## Recognition and privacy
 
-- [Lab report](docs/lab-report.md): every model, engine and setting we tested, with all results
-- [Run the tests yourself](docs/run-the-tests.md): record your own voice and compare models on it
+Recognition uses an English speech model on the Deck’s GPU and a word list to help with WoW terms such as **Deadmines** and **Ironforge**. You can add your friends’ and guildmates’ names to `service/names.txt`. In testing on one Steam Deck OLED, text appeared about **one second** after releasing R4. [Benchmarks and test setup](docs/lab-report.md) · [Run the tests yourself](docs/run-the-tests.md)
 
-## Credits
+Speech recognition runs locally. The tool keeps audio and transcripts for up to 200 recent dictations in `service/history/` on your Deck. You can delete those files any time.
 
-Speech model: NVIDIA Parakeet unified-en 0.6B (CC-BY-4.0), as the
-[GGUF build by handy-computer](https://huggingface.co/handy-computer/parakeet-unified-en-0.6b-gguf), run by
-[transcribe.cpp](https://pypi.org/project/transcribe-cpp/) on Vulkan. Pause detection: Silero VAD (MIT), via
-sherpa-onnx (Apache-2.0). Built by a WoW player together with Claude (Anthropic).
-Our code: [MIT licence](LICENSE). The speech model keeps its own licence (CC-BY-4.0).
-Borrowed, with thanks: the Deck's button positions in the controller data come from
-[Decktation](https://github.com/silverfoxy/decktation)'s deck_hid.py (MIT); `service/common_words.txt` is built
-from the word pieces of OpenAI Whisper's tokenizer (MIT).
-Not affiliated with Blizzard Entertainment or Valve.
+## Credits and license
+
+Built by a WoW player together with Claude (Anthropic). The project code is [MIT licensed](LICENSE).
+
+- Speech recognition uses NVIDIA Parakeet unified-en 0.6B (CC BY 4.0), the [GGUF build by handy-computer](https://huggingface.co/handy-computer/parakeet-unified-en-0-6b-gguf), and [transcribe.cpp](https://pypi.org/project/transcribe-cpp/) on Vulkan.
+- Pause detection uses Silero VAD (MIT) through sherpa-onnx (Apache 2.0).
+- The Deck’s button positions in the controller data come from [Decktation](https://github.com/silverfoxy/decktation) (MIT). The common-word list uses OpenAI Whisper’s tokenizer (MIT).
+
+Created independently of Blizzard Entertainment and Valve.
