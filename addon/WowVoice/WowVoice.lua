@@ -19,7 +19,7 @@
 --           Ctrl+Shift+F6  send the box (no-op if it's closed)   F7 correction (stop the countdown)
 -- The ring's top slots must match service/ring.py (TOP).
 
-local VERSION = "0.5.0"
+local VERSION = "0.5.1"
 local DEFAULTS = { countdown = 2.0, mode = "countdown", channel = { type = "SAY", sector = 1 }, whispers = {}, recent = {},
                    pos = "right", button = "R4" }
 local TOP = { "Say", "Party", "Guild", "Whisper", "Friends", "Recent", "World", "Options" }  -- = service/ring.py
