@@ -103,11 +103,11 @@ elif [ "$state" = 2 ] || [ ! -t 0 ]; then
 else
   cat <<'EOF'
    One last thing. While you pick a chat destination on the wheel, your right stick would also turn the camera.
-   Very annoying! Steam can stop that with a "mode shift" on R4.
+   Very annoying! That's solved with a "mode shift" on the right stick that turns on while R4 is held.
 
    I can set it up for you. Steam must be closed for a moment, and if your right stick already has a mode shift
-   (on any button), it is replaced. Everything else in your layout stays as it is, and your original is saved
-   first, so you can always go back.
+   (on any button), it is replaced. Everything else in your layout stays as it is. Your original is saved first;
+   to put it back any time: bash ~/my-steam-deck-gets-me/restore-controller-layout.sh
 
      1) Set it up for me
      2) Show me how to do it myself

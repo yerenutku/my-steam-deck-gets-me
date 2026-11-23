@@ -18,8 +18,8 @@ Install WoW Forever first (Battle.net as a non-Steam game), so the installer can
 
 ## 2. The camera lock (asked by the installer)
 
-While you pick a chat destination on the wheel, the right stick would also turn your camera. Steam stops that with a
-**mode shift** on R4. At the end, the installer offers three choices:
+While you pick a chat destination on the wheel, the right stick would also turn your camera. That's solved with a
+**mode shift** on the right stick that turns on while R4 is held. At the end, the installer offers three choices:
 
 1. **Set it up for me.** You close Steam for a moment; the installer adds the mode shift to your Battle.net layout.
    If your right stick already had a mode shift on any button, it is replaced; everything else stays as it is. Your
