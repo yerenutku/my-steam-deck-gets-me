@@ -119,17 +119,26 @@ EOF
       while pgrep -x steam >/dev/null; do
         read -r -p "   Please close Steam now (Steam menu > Exit), then press Enter. " _
       done
-      "$PY" "$MS" setup | sed 's/^/   /'
-      ok "start Steam again. To undo it later: bash ~/my-steam-deck-gets-me/restore-controller-layout.sh"
+      if out=$("$PY" "$MS" setup 2>&1); then
+        ok "Camera lock set up on R4 (in your Battle.net controller layout)."
+        echo "     Your original layout is saved. To put it back any time (with Steam closed):"
+        echo "       bash ~/my-steam-deck-gets-me/restore-controller-layout.sh"
+        echo "     You can start Steam again now."
+      else
+        warn "That didn't work:"; echo "$out" | sed 's/^/     /'
+        manual
+      fi
       ;;
     2) manual ;;
     *) ok "skipped. Run this installer again any time to set it up." ;;
   esac
 fi
 
-cat <<'EOF'
-
-Done! Start Battle.net and WoW: "Voice ready" appears shortly after you enter the world.
-Then hold R4, speak, let go.
-Uninstall: bash ~/my-steam-deck-gets-me/uninstall.sh
-EOF
+line() { printf '\033[1;36m%s\033[0m\n' "  ─────────────────────────────────────────────────────────────"; }
+echo; line
+printf '\033[1;32m  All done!\033[0m\n\n'
+echo '  1. Start Battle.net and WoW. "Voice ready" appears shortly after you enter the world.'
+echo '  2. Hold R4, speak, let go.'
+echo
+echo '  Uninstall:  bash ~/my-steam-deck-gets-me/uninstall.sh'
+line
