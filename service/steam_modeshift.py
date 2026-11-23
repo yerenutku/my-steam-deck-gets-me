@@ -127,6 +127,7 @@ def main():
     if steam_running():
         print("Steam is running. Close it first (Desktop Mode: Steam menu > Exit), then try again.")
         sys.exit(3)
+    restored_none = False
     for f in files:
         if cmd == "setup":
             text = f.read_text(encoding="utf-8")
@@ -143,12 +144,15 @@ def main():
             b = backup_path(f)
             if not b.exists():
                 print(f"no saved original for {f}")
+                restored_none = True
                 continue
             shutil.copy2(b, f)
             print(f"restored: {f}")
         else:
             print(__doc__)
             sys.exit(2)
+    if cmd == "restore" and restored_none:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

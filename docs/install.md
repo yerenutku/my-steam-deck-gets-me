@@ -23,7 +23,7 @@ While you pick a chat destination on the wheel, the right stick would also turn 
 
 1. **Set it up for me.** You close Steam for a moment; the installer adds the mode shift to your Battle.net layout.
    If your right stick already had a mode shift on any button, it is replaced; everything else stays as it is. Your
-   original is saved first, and the installer shows the one command that puts it back (the uninstaller offers it too).
+   original is saved first; `bash ~/my-steam-deck-gets-me/restore-controller-layout.sh` puts it back (with Steam closed).
 2. **Show me how**, to do it yourself in Steam:
    your WoW / Battle.net entry → **Controller settings** → **Edit layout** →
    - **Back grip buttons:** remove any command from **R4**.

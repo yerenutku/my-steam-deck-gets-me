@@ -13,8 +13,7 @@ done
 if [ -d "$DIR/backups" ] && [ -t 0 ]; then
   read -r -p "Put your original Steam controller layout back? Steam must be closed. [y/N] " answer
   if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
-    while pgrep -x steam >/dev/null; do read -r -p "Close Steam (Steam menu > Exit), then press Enter. " _; done
-    "$DIR/envs/sherpa/bin/python" "$DIR/service/steam_modeshift.py" restore
+    bash "$DIR/restore-controller-layout.sh"
   fi
 fi
 read -r -p "Also delete $DIR (models, settings, your dictation history)? [y/N] " answer

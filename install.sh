@@ -120,8 +120,7 @@ EOF
         read -r -p "   Please close Steam now (Steam menu > Exit), then press Enter. " _
       done
       "$PY" "$MS" setup | sed 's/^/   /'
-      ok "start Steam again. To undo later: close Steam, then run:"
-      echo "      $PY $MS restore"
+      ok "start Steam again. To undo it later: bash ~/my-steam-deck-gets-me/restore-controller-layout.sh"
       ;;
     2) manual ;;
     *) ok "skipped. Run this installer again any time to set it up." ;;
