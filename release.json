@@ -1,6 +1,6 @@
 {
- "version": "0.5.14",
+ "version": "0.5.15",
  "compat": 1,
  "after": "reload",
- "notes": "Says which part to update when the app and the addon don't fit."
+ "notes": "Clearer message when the app needs an update."
 }
