@@ -19,7 +19,7 @@
 --           Ctrl+Shift+F6  send the box (no-op if it's closed)   F7 correction (stop the countdown)
 -- The ring's top slots must match service/ring.py (TOP).
 
-local VERSION = "0.4.23"
+local VERSION = "0.5.0"
 local DEFAULTS = { countdown = 2.0, mode = "countdown", channel = { type = "SAY", sector = 1 }, whispers = {}, recent = {},
                    pos = "right", button = "R4" }
 local TOP = { "Say", "Party", "Guild", "Whisper", "Friends", "Recent", "World", "Options" }  -- = service/ring.py
@@ -1275,6 +1275,123 @@ local function seeVendor()
   end
 end
 
+------------------------------------------------------------------ dialog (updates): View focuses it, A / B answer
+-- Many addon popups need a mouse; this one doesn't. It never blocks play: only after the View button is it focused,
+-- then A / B answer. Out of combat only (WoW forbids changing bindings in combat): it waits for the fight to end.
+local showDialog
+local dialog = CreateFrame("Frame", "WowVoiceDialog", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+dialog:SetSize(460, 190)
+dialog:SetPoint("CENTER", 0, 160)
+dialog:SetFrameStrata("DIALOG")
+dialog:SetBackdrop({ bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+                     tile = true, tileSize = 16, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
+dialog:SetBackdropColor(0.05, 0.04, 0.03, 0.95)
+dialog:SetBackdropBorderColor(0.85, 0.65, 0.25, 1)
+dialog:Hide()
+local dlgTitle = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+dlgTitle:SetPoint("TOP", 0, -18)
+local dlgText = dialog:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+dlgText:SetPoint("TOP", dlgTitle, "BOTTOM", 0, -12)
+dlgText:SetWidth(410)
+dlgText:SetSpacing(3)
+local dlgHint = dialog:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+dlgHint:SetPoint("BOTTOM", 0, 54)
+dlgHint:SetTextColor(0.85, 0.75, 0.5)
+local dlgA = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
+dlgA:SetSize(180, 26)
+local dlgB = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
+dlgB:SetSize(180, 26)
+dlgB:SetPoint("BOTTOMLEFT", dialog, "BOTTOM", 6, 18)
+local dlgFocus = CreateFrame("Button", "WowVoiceDialogFocus", dialog)
+local dlgQueue, dlgCurrent = {}, nil
+
+local function dlgClose(which)
+  local d = dlgCurrent
+  dialog:EnableGamePadButton(false)
+  ClearOverrideBindings(dialog)
+  dialog:Hide()
+  dlgCurrent = nil
+  if d and d[which] then d[which]() end
+  if #dlgQueue > 0 then C_Timer.After(0.3, function() if not dlgCurrent then showDialog(table.remove(dlgQueue, 1)) end end) end
+end
+dlgFocus:SetScript("OnClick", function()                -- View button: now A / B answer the dialog
+  if not dlgCurrent then return end
+  dialog:EnableGamePadButton(true)
+  dlgHint:SetText(G("a") .. " " .. (dlgCurrent.a or "OK") .. (dlgCurrent.b and ("        " .. G("b") .. " " .. dlgCurrent.b) or ""))
+end)
+dialog:SetScript("OnGamePadButtonDown", function(_, button)
+  if button == "PAD1" then dlgClose("onA")
+  elseif button == "PAD2" and dlgCurrent and dlgCurrent.b then dlgClose("onB") end
+end)
+dlgA:SetScript("OnClick", function() dlgClose("onA") end)
+dlgB:SetScript("OnClick", function() dlgClose("onB") end)
+
+showDialog = function(d)
+  if dlgCurrent or InCombatLockdown() then table.insert(dlgQueue, d) return end
+  dlgCurrent = d
+  dlgTitle:SetText(d.title)
+  dlgText:SetText(d.text or "")
+  dlgA:SetText(d.a or "OK")
+  dlgA:ClearAllPoints()
+  if d.b then
+    dlgB:SetText(d.b); dlgB:Show()
+    dlgA:SetPoint("BOTTOMRIGHT", dialog, "BOTTOM", -6, 18)
+  else
+    dlgB:Hide()
+    dlgA:SetPoint("BOTTOM", 0, 18)
+  end
+  dialog:SetHeight(dlgText:GetStringHeight() + 130)
+  dlgHint:SetText("Press the View button to answer with your controller")
+  SetOverrideBindingClick(dialog, true, "PADBACK", "WowVoiceDialogFocus")
+  dialog:Show()
+end
+
+-- what the app tells us (Shift+F10..F12, see the app's updater.py)
+SH.F10 = function()
+  showDialog({ title = "Update finished", text = "Reload to use the new version.", a = "Reload now", onA = ReloadUI,
+               b = "Later" })
+end
+SH.F11 = function()
+  showDialog({ title = "Update failed", text = "Nothing was changed. The details are in the app's log:\n"
+               .. "~/my-steam-deck-gets-me/.cache/service.log" })
+end
+SH.F12 = function()
+  showDialog({ title = "Addon and app don't fit", text = "This addon version doesn't work with the installed app.\n"
+               .. "Update the addon (CurseForge), or run the app's installer again." })
+end
+
+local function offerUpdate()                            -- the app left an offer in our saved file (WowVoiceUpdate)
+  local U = WowVoiceUpdate
+  if not (U and U.version) or (DB.updateSnooze and time() - DB.updateSnooze < 12 * 3600) then return end
+  local text = (U.notes and U.notes ~= "" and (U.notes .. "\n\n") or "")
+    .. (U.addon and "The app and this addon are updated; the game reloads once."
+        or "This updates the app. The addon came from elsewhere: update it there (CurseForge).")
+  showDialog({ title = "Update available: v" .. U.version, text = text, a = "Update now", b = "Later",
+    onA = function()
+      DB.updateRequest = U.version                       -- the app sees it as soon as WoW saves (the reload)
+      WowVoiceUpdate = nil
+      ReloadUI()
+    end,
+    onB = function() DB.updateSnooze = time() end })
+end
+
+local function afterUpdate()                            -- first start of a new version: what's left to do
+  local R = WowVoiceRelease
+  if not (R and R.version == VERSION) or DB.seenRelease == VERSION then return end
+  local first = DB.seenRelease == nil                   -- a fresh install: nothing to report
+  DB.seenRelease = VERSION
+  if first then return end
+  if R.after == "restart_wow" then
+    showDialog({ title = "One more step", text = "Updated to v" .. VERSION .. ". Quit WoW completely and start it again"
+                 .. " to finish the update." })
+  elseif R.after == "restart_steam" then
+    showDialog({ title = "One more step", text = "Updated to v" .. VERSION .. ". Restart Steam to finish the update"
+                 .. " (Desktop Mode: Steam menu > Exit; Game Mode: restart the Deck)." })
+  else
+    say("updated to v" .. VERSION .. (R.notes and R.notes ~= "" and (": " .. R.notes) or ""))
+  end
+end
+
 ------------------------------------------------------------------ events
 owner:RegisterEvent("ADDON_LOADED")
 owner:RegisterEvent("PLAYER_LOGOUT")
@@ -1282,6 +1399,7 @@ owner:RegisterEvent("QUEST_LOG_UPDATE")
 owner:RegisterEvent("MERCHANT_SHOW")
 owner:RegisterEvent("MERCHANT_UPDATE")
 owner:RegisterEvent("PLAYER_LOGIN")
+owner:RegisterEvent("PLAYER_REGEN_ENABLED")
 owner:RegisterEvent("ADDON_ACTION_BLOCKED")
 owner:RegisterEvent("ADDON_ACTION_FORBIDDEN")
 for _, ev in ipairs({ "CHAT_MSG_WHISPER", "CHAT_MSG_WHISPER_INFORM", "CHAT_MSG_SAY", "CHAT_MSG_YELL",
@@ -1300,12 +1418,16 @@ owner:SetScript("OnEvent", function(self, event, a1, a2)
       WowVoiceDB.cameraSaved = nil
     end
     DB = WowVoiceDB
+    DB.updateRequest = nil                             -- it reached the app with the save of the reload that sent it
     DB.log = {}
     note("loaded v" .. VERSION)
     DB.unitMenu = nil
     ctxSaved = {}
     for t in (DB.ctx or ""):gmatch("[^;]+") do ctxSaved[t:lower()] = true end
+  elseif event == "PLAYER_REGEN_ENABLED" then
+    if not dlgCurrent and #dlgQueue > 0 then showDialog(table.remove(dlgQueue, 1)) end
   elseif event == "PLAYER_LOGIN" then
+    C_Timer.After(8, function() afterUpdate(); offerUpdate() end)
     bindKeys()
     requestFriends()
     layout()

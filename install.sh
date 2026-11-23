@@ -62,9 +62,15 @@ else
   for wow in "$HOME"/.local/share/Steam/steamapps/compatdata/*/pfx/drive_c/"Program Files (x86)"/"World of Warcraft"/_*_; do
     [ -d "$wow" ] || continue
     mkdir -p "$wow/Interface/AddOns"
-    rm -rf "$wow/Interface/AddOns/WowVoice"
-    cp -r "$DIR/addon/WowVoice" "$wow/Interface/AddOns/"
-    ok "copied to $(basename "$wow") ($wow)"
+    target="$wow/Interface/AddOns/WowVoice"
+    if [ -d "$target" ] && [ ! -f "$target/.installed-by-app" ]; then
+      ok "$(basename "$wow"): the addon is already there from elsewhere (CurseForge?), left alone"
+    else
+      rm -rf "$target"
+      cp -r "$DIR/addon/WowVoice" "$target"
+      touch "$target/.installed-by-app"          # the app's updater may update this copy
+      ok "copied to $(basename "$wow")"
+    fi
     found=1
   done
   [ "$found" = 1 ] || warn "WoW not found in Steam's Proton folders. Install WoW first (Battle.net as a non-Steam game), then run this again."

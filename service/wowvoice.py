@@ -587,6 +587,7 @@ SIG_REPLACE, SIG_REPLACE_DONE = 8, 9               # correction: the typed word 
 SIG_LISTEN, SIG_WORKING, SIG_IDLE = 10, 11, 12      # the in-game indicator: listening / transcribing / done
 HELLO = 9                     # Shift+F9 (ring highlights use Shift+F1-8): "the tool runs" -> addon shows Ready
 HELLO_AFTER = (4, 12, 30, 60) # seconds after a UI load; the addon only reacts to the first one it gets
+UPDATE_DONE, UPDATE_FAILED, ADDON_MISFIT = 10, 11, 12   # Shift+F10..F12: dialogs in the addon (updater.py)
 
 
 def main():
@@ -905,6 +906,13 @@ def main():
                 plan = [time.monotonic() + d for d in HELLO_AFTER]
                 give_up = time.monotonic() + 180
             for folder, name, _ in events:
+                if name == "WowVoice.lua":                    # /reload: "Update now" pressed in the game?
+                    m = re.search(r'\["updateRequest"\]\s*=\s*"([\d.]+)"',
+                                  (folder / name).read_text(encoding="utf-8", errors="replace"))
+                    if m and not update["busy"] and updater.vtuple(m.group(1)) > updater.vtuple(
+                            updater.local_release()["version"]):
+                        update["busy"] = True
+                        threading.Thread(target=run_update, args=(m.group(1),), daemon=True).start()
                 if name == "WowVoice.lua":                    # /reload or logout: the addon's send mode
                     mode, countdown = saved_send_mode(folder / name)
                     if mode and (mode, countdown or args.countdown) != (args.send_mode, args.countdown):
@@ -916,9 +924,32 @@ def main():
                 if wow_active():
                     keyboard.highlight(HELLO)
                     log("hello sent to the addon")
+                    misfit = [d for d in updater.addon_dirs()
+                              if updater.addon_compat(d) != updater.local_release().get("compat", 1)]
+                    if misfit and not update["misfit_said"]:
+                        time.sleep(0.3)
+                        keyboard.highlight(ADDON_MISFIT)      # the addon says: update the addon
+                        update["misfit_said"] = True
+                        log("addon and app don't fit (compat number differs): told the addon")
                 elif not plan and time.monotonic() < give_up:
                     plan.append(time.monotonic() + 5)        # WoW not in front (Desktop Mode): try again soon
 
+    import updater
+    update = {"busy": False, "misfit_said": False}
+
+    def run_update(version):
+        try:
+            updater.install(version, log)
+            keyboard.highlight(UPDATE_DONE)               # addon: "Update finished: reload"
+            time.sleep(1)
+            updater.restart_app(log)
+        except Exception:
+            import traceback
+            log("update FAILED:\n" + traceback.format_exc())
+            keyboard.highlight(UPDATE_FAILED)
+            update["busy"] = False
+
+    threading.Thread(target=updater.check, args=(wow_running, log), daemon=True).start()
     threading.Thread(target=greeter, daemon=True).start()
 
     def on_term(*_):
