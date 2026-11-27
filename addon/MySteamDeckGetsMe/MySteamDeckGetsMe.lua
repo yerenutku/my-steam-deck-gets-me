@@ -19,7 +19,7 @@
 --           Ctrl+Shift+F6  send the box (no-op if it's closed)   F7 correction (stop the countdown)
 -- The ring's top slots must match service/ring.py (TOP).
 
-local VERSION = "0.6.1"
+local VERSION = "0.6.2"
 local DEFAULTS = { countdown = 2.0, mode = "countdown", channel = { type = "SAY", sector = 1 }, whispers = {}, recent = {},
                    pos = "right", button = "R4" }
 local TOP = { "Say", "Party", "Guild", "Whisper", "Friends", "Recent", "World", "Options" }  -- = service/ring.py
@@ -1254,11 +1254,20 @@ local function saveContext()
   end
 end
 
+local function merchantItemName(i)                     -- WoW 1.60.1.71139 removed GetMerchantItemInfo
+  if C_MerchantFrame and C_MerchantFrame.GetItemInfo then
+    local info = C_MerchantFrame.GetItemInfo(i)
+    return info and info.name
+  elseif GetMerchantItemInfo then
+    return (GetMerchantItemInfo(i))
+  end
+end
+
 local function seeVendor()
   local names = {}
   for i = 1, (GetMerchantNumItems and GetMerchantNumItems() or 0) do
-    local name = GetMerchantItemInfo(i)
-    if name then table.insert(names, name) end
+    local ok, name = pcall(merchantItemName, i)
+    if ok and name then table.insert(names, name) end
   end
   if #names == 0 then return end
   DB.vendorItems = DB.vendorItems or {}
@@ -1292,11 +1301,13 @@ local function afterUpdate()
   say("updated to v" .. VERSION .. (R.notes and R.notes ~= "" and (": " .. R.notes) or "") .. "." .. todo)
 end
 
-SH.F11 = function()                                     -- the app: the app is older than this addon
-  say("|cffff8060the app is older than this addon.|r Exit WoW entirely, it updates itself.")
-end
-SH.F12 = function()                                     -- the app: this addon is older than the app
-  say("|cffff8060this addon is older than the app.|r Update it in CurseForge.")
+local function sayMisfit()                              -- the app noted it in our save file (updater.note_misfit)
+  if DB.misfit == "app_older" then
+    say("|cffff8060the app is older than this addon.|r Exit WoW entirely, it updates itself.")
+  elseif DB.misfit == "addon_older" then
+    say("|cffff8060this addon is older than the app.|r Update it in CurseForge.")
+  end
+  DB.misfit = nil
 end
 
 ------------------------------------------------------------------ first start: "reload once"
@@ -1353,7 +1364,7 @@ owner:SetScript("OnEvent", function(self, event, a1, a2)
     ctxSaved = {}
     for t in (DB.ctx or ""):gmatch("[^;]+") do ctxSaved[t:lower()] = true end
   elseif event == "PLAYER_LOGIN" then
-    C_Timer.After(8, afterUpdate)
+    C_Timer.After(8, function() afterUpdate(); sayMisfit() end)
     bindKeys()
     requestFriends()
     layout()

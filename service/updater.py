@@ -91,11 +91,32 @@ def saved_files():
     return out
 
 
+def note_misfit(log):
+    """If the addon's compat number differs from the app's, leave the addon a note in its save file (WoW hasn't loaded
+    it yet): it says at login which side to update."""
+    mine = local_release().get("compat", 1)
+    theirs = [addon_compat(d) for d in addon_dirs()]
+    note = "app_older" if theirs and max(theirs) > mine else "addon_older" if any(c != mine for c in theirs) else None
+    for f in saved_files():
+        old = f.read_text(encoding="utf-8", errors="surrogateescape")
+        text = re.sub(r'\n\["misfit"\] = "[a-z_]+",', "", old)
+        if note:
+            text = re.sub(r"^(WowVoiceDB = \{)", rf'\1\n["misfit"] = "{note}",', text, count=1, flags=re.M)
+        if text != old:                               # leave the player's save file alone when nothing changes
+            f.write_text(text, encoding="utf-8", errors="surrogateescape")
+    if note:
+        log(f"addon (compat {theirs}) and app (compat {mine}) don't fit: noted for the addon ({note})")
+
+
 def auto_update(wow_running, log, wow_just_started=False):
     """Install a newer release now, if WoW hasn't loaded its addons yet. Returns True if the app was updated (it
     restarts itself then)."""
     if not is_installed_copy() or (wow_running() and not wow_just_started):
         return False
+    try:
+        note_misfit(log)
+    except Exception as e:
+        log(f"compat note failed: {e}")
     info = latest_release()
     if not info or vtuple(info["version"]) <= vtuple(local_release()["version"]):
         return False

@@ -456,10 +456,26 @@ def clean(text):
     return text[:CHAT_MAX]
 
 
+def refresh_x_env():
+    """Take DISPLAY / XAUTHORITY from the systemd user manager, which each desktop session updates. Our own copy is
+    from when the service started: after a boot into Game Mode there is no XAUTHORITY (xdotool: "Authorization
+    required", so R4 was ignored in Desktop Mode), and every new desktop session uses a new file."""
+    try:
+        out = subprocess.run(["systemctl", "--user", "show-environment"], capture_output=True,
+                             text=True, timeout=2).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return
+    for line in out.splitlines():
+        key, _, value = line.partition("=")
+        if key in ("DISPLAY", "XAUTHORITY") and value:
+            os_environ[key] = value
+
+
 def active_window():
     """The active window's title. In Game Mode only the game is on screen: WoW running = WoW in front."""
     if not desktop_mode():
         return WOW_WINDOW if wow_running() else ""
+    _cached("x_env", 5, refresh_x_env)
     try:
         return subprocess.run(["xdotool", "getactivewindow", "getwindowname"], capture_output=True,
                               text=True, timeout=2).stdout.strip()
@@ -588,8 +604,6 @@ SIG_LISTEN, SIG_WORKING, SIG_IDLE = 10, 11, 12      # the in-game indicator: lis
 HELLO = 9                     # Shift+F9 (ring highlights use Shift+F1-8): "the tool runs" -> addon shows Ready
 HELLO_AFTER = tuple(range(3, 91, 3))  # every 3 s for 90 s after a UI load (loading screens eat keys); the
                                       # addon only reacts to the first one it gets
-OVERLAY, APP_OLDER, ADDON_OLDER = 10, 11, 12   # Shift+F10: L4 shows / hides the button overlay;
-                                               # F11 / F12: the addon says which side must be updated (compat numbers)
 
 
 def main():
@@ -816,10 +830,6 @@ def main():
                 log(("dropped by Esc" if g[1] == "esc" else "sent by Enter") + " in the box")
                 pending.update(text=None, deadline=None, correcting=False)
             return
-        if kind == "pad" and g[1] == "L4":                # the addon's button overlay (for videos)
-            if wow_active() and not args.no_addon:
-                keyboard.highlight(OVERLAY)
-            return
         if kind == "pad":                                 # the addon acted on A / B; keep our state in step
             if pending["correcting"]:
                 pending["correcting"] = False             # A = corrections done, B = undone: back to the box
@@ -924,18 +934,10 @@ def main():
                     keyboard.highlight(HELLO)
                     if len(plan) + 1 in (len(HELLO_AFTER), 3):  # log only the first of a round
                         log("hello: sending to the addon")
-                    mine = updater.local_release().get("compat", 1)
-                    theirs = [updater.addon_compat(d) for d in updater.addon_dirs()]
-                    if any(c != mine for c in theirs) and not update["misfit_said"]:
-                        time.sleep(0.3)
-                        keyboard.highlight(APP_OLDER if max(theirs) > mine else ADDON_OLDER)
-                        update["misfit_said"] = True
-                        log(f"addon (compat {theirs}) and app (compat {mine}) don't fit: told the addon")
                 elif not plan and time.monotonic() < give_up:
                     plan.append(time.monotonic() + 5)        # WoW not in front (Desktop Mode): try again soon
 
     import updater
-    update = {"misfit_said": False}
 
     threading.Thread(target=updater.auto_update, args=(wow_running, log), daemon=True).start()
 

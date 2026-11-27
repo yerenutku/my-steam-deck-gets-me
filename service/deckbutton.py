@@ -10,8 +10,7 @@ import threading
 import time
 
 BUTTONS = {"L4": (13, 1), "R4": (13, 2), "L5": (9, 7), "R5": (10, 0)}
-PAD = {"A": (8, 7), "B": (8, 5),            # watched too: the tool must know when the box was sent / dropped
-       "L4": (13, 1)}                        # L4: shows / hides the addon's button overlay
+PAD = {"A": (8, 7), "B": (8, 5)}            # watched too: the tool must know when the box was sent / dropped
 # (View = byte 9 bit 4, Menu = byte 9 bit 6, if ever needed: SDL's Steam Deck map, checked 2026-11-23)
 
 
